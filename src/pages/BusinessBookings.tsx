@@ -68,8 +68,8 @@ export default function BusinessBookings() {
   });
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Bookings</h1>
           <p className="text-slate-500 text-sm mt-1">

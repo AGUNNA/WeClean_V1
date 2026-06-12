@@ -46,7 +46,7 @@ export default function AdminWithdrawals() {
   });
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-11 h-11 rounded-md bg-green-50 text-green-600 flex items-center justify-center">
           <Wallet className="w-5 h-5" />

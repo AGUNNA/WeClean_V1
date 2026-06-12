@@ -1,7 +1,6 @@
-import { Outlet, Link, useLocation } from "react-router";
+import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -12,6 +11,8 @@ import {
   Wallet,
   ChevronLeft,
   Shield,
+  Menu,
+  X,
 } from "lucide-react";
 
 const adminNavItems = [
@@ -28,12 +29,14 @@ export default function AdminLayout() {
   const { isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !isAdmin) {
-      navigate("/");
-    }
+    if (!isLoading && !isAdmin) navigate("/");
   }, [isAdmin, isLoading, navigate]);
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => setOpen(false), [location.pathname]);
 
   if (isLoading) {
     return (
@@ -46,11 +49,33 @@ export default function AdminLayout() {
   if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background">
+      {/* Mobile top bar */}
+      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 bg-ink text-white">
+        <Link to="/admin" className="flex items-center gap-2">
+          <Shield className="w-5 h-5 text-brand" />
+          <span className="font-display font-bold">Admin Panel</span>
+        </Link>
+        <button onClick={() => setOpen(true)} aria-label="Open menu" className="p-2 -mr-2">
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Backdrop (mobile) */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-ink text-cream/70 flex flex-col fixed h-full">
-        {/* Header */}
-        <div className="p-6 border-b border-white/10">
+      <aside
+        className={`fixed inset-y-0 left-0 w-64 bg-ink text-cream/70 flex flex-col z-50 transition-transform duration-200 lg:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="p-6 border-b border-white/10 flex items-center justify-between">
           <Link to="/admin" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded-sm flex items-center justify-center">
               <Shield className="w-4 h-4 text-white" />
@@ -62,9 +87,11 @@ export default function AdminLayout() {
               </span>
             </div>
           </Link>
+          <button onClick={() => setOpen(false)} className="lg:hidden p-1 text-cream/60" aria-label="Close menu">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {adminNavItems.map((item) => {
             const isActive = location.pathname === item.href;
@@ -85,7 +112,6 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        {/* Footer */}
         <div className="p-4 border-t border-white/10 space-y-2">
           <Link
             to="/"
@@ -98,7 +124,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64">
+      <main className="lg:ml-64 min-w-0">
         <Outlet />
       </main>
     </div>

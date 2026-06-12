@@ -17,9 +17,12 @@ import {
   ClipboardList,
   Sparkles,
   CircleDot,
+  Receipt,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { trpc } from "@/providers/trpc";
+import { toast } from "sonner";
+import ReceiptDialog from "@/components/ReceiptDialog";
 
 const naira = (v: string | number) =>
   "₦" + Number(v).toLocaleString("en-NG", { maximumFractionDigits: 0 });
@@ -40,6 +43,18 @@ export default function CustomerDashboard() {
 
   const { data: bookings, isLoading } = trpc.booking.myBookings.useQuery({ limit: 50 });
   const { data: addresses } = trpc.address.list.useQuery();
+  const { data: referral } = trpc.auth.myReferral.useQuery();
+
+  const copyReferral = async () => {
+    if (!referral?.code) return;
+    const link = `${window.location.origin}/login?ref=${referral.code}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success("Referral link copied!");
+    } catch {
+      toast.success(`Your code: ${referral.code}`);
+    }
+  };
 
   const completed = (bookings ?? []).filter((b) => b.status === "completed");
   const totalSpent = (bookings ?? [])
@@ -154,9 +169,17 @@ export default function CustomerDashboard() {
                               </span>
                             </div>
                           </div>
-                          <p className="text-lg font-bold text-slate-900">
-                            {naira(b.totalAmount)}
-                          </p>
+                          <div className="flex flex-col items-end gap-2">
+                            <p className="text-lg font-bold text-slate-900">
+                              {naira(b.totalAmount)}
+                            </p>
+                            <ReceiptDialog bookingId={b.id}>
+                              <Button size="sm" variant="outline" className="h-8">
+                                <Receipt className="w-3.5 h-3.5 mr-1.5" />
+                                Receipt
+                              </Button>
+                            </ReceiptDialog>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -224,10 +247,25 @@ export default function CustomerDashboard() {
               <Sparkles className="w-8 h-8 mb-3" />
               <h3 className="font-bold text-lg mb-1">Refer & Earn!</h3>
               <p className="text-cream text-sm mb-4">
-                Invite friends and earn ₦500 for each successful referral.
+                Invite friends and earn ₦{referral?.rewardPerReferral ?? "500"} for each
+                successful referral.
               </p>
-              <Button variant="secondary" className="w-full bg-white text-brand hover:bg-brand-50">
-                Share Referral Code
+              {referral && (
+                <div className="bg-white/15 border border-white/25 rounded-md px-3 py-2 mb-3 flex items-center justify-between">
+                  <span className="font-mono font-bold tracking-widest text-lg">
+                    {referral.code}
+                  </span>
+                  <span className="text-xs text-cream">
+                    {referral.completed} referred
+                  </span>
+                </div>
+              )}
+              <Button
+                variant="secondary"
+                className="w-full bg-white text-brand hover:bg-brand-50"
+                onClick={copyReferral}
+              >
+                Copy Referral Link
               </Button>
             </div>
           </div>

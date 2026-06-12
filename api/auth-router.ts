@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { TRPCError } from "@trpc/server";
 import { Session } from "@contracts/constants";
-import { users, businesses, providerProfiles } from "@db/schema";
+import { users, businesses, providerProfiles, referrals } from "@db/schema";
 import { getSessionCookieOptions } from "./lib/cookies";
 import { createRouter, authedQuery, publicQuery } from "./middleware";
 import { getDb } from "./queries/connection";
@@ -41,6 +41,26 @@ const slugify = (s: string) =>
 
 export const authRouter = createRouter({
   me: authedQuery.query((opts) => opts.ctx.user),
+
+  // ── Referral code (generated on first read) ────────────────────
+  myReferral: authedQuery.query(async ({ ctx }) => {
+    const db = getDb();
+    let code = ctx.user.referralCode;
+    if (!code) {
+      code = `WC${nanoid(8).replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 6)}`;
+      await db.update(users).set({ referralCode: code }).where(eq(users.id, ctx.user.id));
+    }
+    const refs = await db
+      .select()
+      .from(referrals)
+      .where(eq(referrals.referrerId, ctx.user.id));
+    return {
+      code,
+      total: refs.length,
+      completed: refs.filter((r) => r.status !== "pending").length,
+      rewardPerReferral: "500",
+    };
+  }),
 
   // ── Register with email + password ─────────────────────────────
   register: publicQuery

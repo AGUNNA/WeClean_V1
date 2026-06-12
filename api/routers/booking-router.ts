@@ -8,6 +8,9 @@ import {
   bookingStatusHistory,
   providerProfiles,
   services,
+  notifications,
+  addresses,
+  users,
 } from "@db/schema";
 import { TRPCError } from "@trpc/server";
 
@@ -131,6 +134,15 @@ export const bookingRouter = createRouter({
         changedBy: customerId,
       });
 
+      // Notify the customer
+      await db.insert(notifications).values({
+        userId: customerId,
+        type: "booking_confirmed",
+        title: "Booking placed",
+        body: `Your booking #${bookingId} has been received and is pending confirmation.`,
+        actionUrl: `/booking/confirmation/${bookingId}`,
+      });
+
       return { success: true, bookingId };
     }),
 
@@ -225,7 +237,34 @@ export const bookingRouter = createRouter({
         .where(eq(bookingStatusHistory.bookingId, input.id))
         .orderBy(desc(bookingStatusHistory.createdAt));
 
-      return { ...booking, items, history };
+      // Delivery address
+      const [address] = await db
+        .select()
+        .from(addresses)
+        .where(eq(addresses.id, booking.addressId))
+        .limit(1);
+
+      // Assigned provider (if any)
+      let provider: {
+        name: string | null;
+        overallRating: string | null;
+        totalJobsCompleted: number | null;
+      } | null = null;
+      if (booking.providerId) {
+        const [p] = await db
+          .select({
+            name: users.name,
+            overallRating: providerProfiles.overallRating,
+            totalJobsCompleted: providerProfiles.totalJobsCompleted,
+          })
+          .from(providerProfiles)
+          .leftJoin(users, eq(users.id, providerProfiles.userId))
+          .where(eq(providerProfiles.id, booking.providerId))
+          .limit(1);
+        provider = p ?? null;
+      }
+
+      return { ...booking, items, history, address: address ?? null, provider };
     }),
 
   // ── Update Booking Status ───────────────────────────────────────
@@ -255,6 +294,13 @@ export const bookingRouter = createRouter({
         updateData.cancelledAt = now;
       }
 
+      // Load the booking first (needed for provider crediting + notification)
+      const [bk] = await db
+        .select()
+        .from(bookings)
+        .where(eq(bookings.id, input.bookingId))
+        .limit(1);
+
       await db
         .update(bookings)
         .set(updateData)
@@ -267,6 +313,44 @@ export const bookingRouter = createRouter({
         notes: input.notes || `Status changed to ${input.status}`,
         changedBy: ctx.user.id,
       });
+
+      // On completion, credit the provider: +1 completed job and add earnings
+      // to their wallet (only once — guard against re-completing).
+      if (
+        input.status === "completed" &&
+        bk &&
+        bk.status !== "completed" &&
+        bk.providerId
+      ) {
+        const [prof] = await db
+          .select()
+          .from(providerProfiles)
+          .where(eq(providerProfiles.id, bk.providerId))
+          .limit(1);
+        if (prof) {
+          await db
+            .update(providerProfiles)
+            .set({
+              totalJobsCompleted: (prof.totalJobsCompleted ?? 0) + 1,
+              walletBalance: (
+                parseFloat(prof.walletBalance || "0") +
+                parseFloat(bk.providerEarnings || "0")
+              ).toFixed(2),
+            })
+            .where(eq(providerProfiles.id, bk.providerId));
+        }
+      }
+
+      // Notify the booking's customer of the status change
+      if (bk) {
+        await db.insert(notifications).values({
+          userId: bk.customerId,
+          type: input.status === "completed" ? "service_completed" : "booking_reminder",
+          title: `Booking #${input.bookingId} ${input.status.replace(/_/g, " ")}`,
+          body: input.notes || `Your booking is now "${input.status.replace(/_/g, " ")}".`,
+          actionUrl: `/dashboard`,
+        });
+      }
 
       return { success: true };
     }),

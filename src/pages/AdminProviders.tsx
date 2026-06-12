@@ -47,8 +47,8 @@ export default function AdminProviders() {
   );
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Providers</h1>
           <p className="text-slate-500 text-sm mt-1">
@@ -97,13 +97,13 @@ export default function AdminProviders() {
           {filtered.map((provider) => (
             <Card key={provider.id} className="border-ink/12 ">
               <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-brand-100 rounded-md flex items-center justify-center">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 bg-brand-100 rounded-md flex items-center justify-center shrink-0">
                       <Briefcase className="w-6 h-6 text-brand" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-semibold text-slate-900">
                           {provider.name ?? "Unnamed"}
                         </h3>
@@ -119,12 +119,12 @@ export default function AdminProviders() {
                           {provider.verificationStatus}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-slate-500">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
                           {provider.city ?? "—"}
                         </span>
-                        <span>{provider.email}</span>
+                        <span className="truncate max-w-[200px]">{provider.email}</span>
                         <span>{provider.yearsOfExperience ?? 0} yrs exp</span>
                         {provider.idType && (
                           <span className="flex items-center gap-1">
