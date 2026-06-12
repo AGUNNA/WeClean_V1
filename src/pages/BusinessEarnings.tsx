@@ -38,8 +38,10 @@ const statusColor: Record<string, string> = {
 export default function BusinessEarnings() {
   const utils = trpc.useUtils();
   const { data, isLoading } = trpc.business.earnings.useQuery();
+  const { data: biz } = trpc.business.myBusiness.useQuery();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
+  const hasBank = !!(biz?.bankName && biz?.accountNumber);
 
   const request = trpc.business.requestWithdrawal.useMutation({
     onSuccess: () => {
@@ -58,8 +60,8 @@ export default function BusinessEarnings() {
   ];
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Earnings</h1>
           <p className="text-slate-500 text-sm mt-1">
@@ -77,21 +79,36 @@ export default function BusinessEarnings() {
             <DialogHeader>
               <DialogTitle>Request a withdrawal</DialogTitle>
             </DialogHeader>
-            <div className="py-2">
-              <label className="text-sm text-slate-600 mb-1.5 block">
-                Amount (available: {data ? naira(data.walletBalance) : "—"})
-              </label>
-              <Input
-                type="number"
-                placeholder="50000"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
+            <div className="py-2 space-y-3">
+              <div>
+                <label className="text-sm text-slate-600 mb-1.5 block">
+                  Amount (available: {data ? naira(data.walletBalance) : "—"})
+                </label>
+                <Input
+                  type="number"
+                  placeholder="50000"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+              {hasBank ? (
+                <div className="text-sm bg-cream border border-ink/12 rounded-md p-3">
+                  <p className="text-slate-500 text-xs mb-0.5">Paying out to</p>
+                  <p className="font-medium text-slate-900">
+                    {biz?.bankName} · {biz?.accountNumber}
+                  </p>
+                  <p className="text-slate-500">{biz?.accountName}</p>
+                </div>
+              ) : (
+                <p className="text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-md p-3">
+                  Add a bank account under <span className="font-semibold">Profile → Bank account</span> before requesting a payout.
+                </p>
+              )}
             </div>
             <DialogFooter>
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700"
-                disabled={!amount || request.isPending}
+                disabled={!amount || !hasBank || request.isPending}
                 onClick={() => request.mutate({ amount })}
               >
                 Submit request

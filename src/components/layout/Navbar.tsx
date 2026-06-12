@@ -28,9 +28,9 @@ import {
   Info,
   HelpCircle,
   Mail,
-  Bell,
 } from "lucide-react";
 import { useState } from "react";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Navbar() {
   const { user, isAuthenticated, isAdmin, isBusiness, isProvider, logout } = useAuth();
@@ -86,10 +86,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <>
-                <button className="relative p-2 text-slate-500 hover:text-ink hover:bg-ink/5 rounded-lg transition-colors">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-                </button>
+                <NotificationBell />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

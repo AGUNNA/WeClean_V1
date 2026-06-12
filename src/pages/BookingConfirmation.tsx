@@ -1,15 +1,17 @@
 import { useParams, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
+import ReceiptDialog from "@/components/ReceiptDialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/providers/trpc";
+import { toast } from "sonner";
 import {
   CheckCircle2,
   Calendar,
   Clock,
   MapPin,
-  MessageSquare,
-  Phone,
   ArrowRight,
   Home,
   Star,
@@ -17,9 +19,27 @@ import {
   Download,
 } from "lucide-react";
 
+const naira = (v: string | number | null | undefined) =>
+  "₦" + Number(v || 0).toLocaleString("en-NG", { maximumFractionDigits: 0 });
+
+const statusColors: Record<string, string> = {
+  confirmed: "bg-brand-100 text-brand-700",
+  completed: "bg-green-100 text-green-700",
+  pending: "bg-amber-100 text-amber-700",
+  provider_assigned: "bg-cyan-100 text-cyan-700",
+  in_progress: "bg-purple-100 text-purple-700",
+  cancelled: "bg-red-100 text-red-700",
+};
+
 export default function BookingConfirmation() {
   const { bookingId } = useParams<{ bookingId: string }>();
   const navigate = useNavigate();
+  const id = Number(bookingId);
+
+  const { data: booking, isLoading } = trpc.booking.getById.useQuery(
+    { id },
+    { enabled: !!id }
+  );
 
   return (
     <div className="min-h-screen bg-cream py-12">
@@ -29,153 +49,167 @@ export default function BookingConfirmation() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Booking Confirmed!
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-900">Booking Confirmed!</h1>
           <p className="text-slate-500 mt-2">
-            Your booking <span className="font-semibold text-brand">#{bookingId || "1284"}</span> has been confirmed.
+            Your booking{" "}
+            <span className="font-semibold text-brand">
+              #{id || bookingId}
+            </span>{" "}
+            has been placed.
           </p>
         </div>
 
         {/* Booking Card */}
         <Card className="border-ink/12 shadow-hard mb-6">
           <CardContent className="p-6 space-y-6">
-            {/* Status */}
-            <div className="flex items-center justify-between">
-              <Badge className="bg-brand-100 text-brand-700 text-sm px-3 py-1">
-                Confirmed
-              </Badge>
-              <span className="text-sm text-slate-500">
-                Ref: CLP{Date.now()}
-              </span>
-            </div>
-
-            <Separator />
-
-            {/* Service */}
-            <div>
-              <p className="text-sm text-slate-500 mb-1">Service</p>
-              <h2 className="text-xl font-bold text-slate-900">
-                House Cleaning - 2 Bedroom
-              </h2>
-              <p className="text-sm text-slate-500 mt-1">
-                Includes: Dusting, Mopping, Bathroom Cleaning, Kitchen Wipe-down
+            {isLoading ? (
+              <Skeleton className="h-72 w-full" />
+            ) : !booking ? (
+              <p className="text-center text-slate-500 py-8">
+                Booking not found.
               </p>
-            </div>
-
-            {/* Details Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <Calendar className="w-5 h-5 text-brand mt-0.5" />
-                <div>
-                  <p className="text-sm text-slate-500">Date</p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    Thursday, May 15, 2026
-                  </p>
+            ) : (
+              <>
+                {/* Status */}
+                <div className="flex items-center justify-between">
+                  <Badge
+                    className={`text-sm px-3 py-1 ${
+                      statusColors[booking.status] ?? "bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    {booking.status.replace(/_/g, " ")}
+                  </Badge>
+                  <span className="text-sm text-slate-500">
+                    Ref: WC-{String(booking.id).padStart(5, "0")}
+                  </span>
                 </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-brand mt-0.5" />
+
+                <Separator />
+
+                {/* Services */}
                 <div>
-                  <p className="text-sm text-slate-500">Time</p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    10:00 AM - 12:00 PM
-                  </p>
+                  <p className="text-sm text-slate-500 mb-1">Service</p>
+                  {booking.items?.length ? (
+                    booking.items.map((it) => (
+                      <h2 key={it.id} className="text-lg font-bold text-slate-900">
+                        {it.serviceName}
+                        <span className="text-slate-400 font-normal"> ×{it.quantity ?? 1}</span>
+                      </h2>
+                    ))
+                  ) : (
+                    <h2 className="text-lg font-bold text-slate-900">Cleaning service</h2>
+                  )}
+                  {booking.propertySize && (
+                    <p className="text-sm text-slate-500 mt-1 capitalize">
+                      {booking.propertySize.replace(/_/g, " ")}
+                      {booking.numberOfRooms ? ` · ${booking.numberOfRooms} rooms` : ""}
+                    </p>
+                  )}
                 </div>
-              </div>
-              <div className="flex items-start gap-3 col-span-2">
-                <MapPin className="w-5 h-5 text-brand mt-0.5" />
-                <div>
-                  <p className="text-sm text-slate-500">Address</p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    15 Admiralty Way, Lekki Phase 1, Lagos
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <Separator />
-
-            {/* Pricing */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Base Price</span>
-                <span className="text-slate-700">N12,000</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Add-ons</span>
-                <span className="text-slate-700">N0</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Platform Fee</span>
-                <span className="text-slate-700">N600</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="font-semibold text-slate-900">Total Paid</span>
-                <span className="text-xl font-bold text-brand">
-                  N12,600
-                </span>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Provider */}
-            <div>
-              <p className="text-sm text-slate-500 mb-3">Assigned Provider</p>
-              <div className="flex items-center gap-3 p-3 bg-cream rounded-md">
-                <div className="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center">
-                  <span className="text-lg font-bold text-brand">C</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-900">Chioma A.</p>
-                  <div className="flex items-center gap-2 text-sm text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      4.9
-                    </span>
-                    <span>156 jobs completed</span>
+                {/* Details */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-brand mt-0.5" />
+                    <div>
+                      <p className="text-sm text-slate-500">Date</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {booking.scheduledDate
+                          ? new Date(booking.scheduledDate).toLocaleDateString(undefined, {
+                              weekday: "short",
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-brand mt-0.5" />
+                    <div>
+                      <p className="text-sm text-slate-500">Time</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {booking.preferredTimeStart || "To be confirmed"}
+                        {booking.preferredTimeEnd ? ` - ${booking.preferredTimeEnd}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 col-span-2">
+                    <MapPin className="w-5 h-5 text-brand mt-0.5" />
+                    <div>
+                      <p className="text-sm text-slate-500">Address</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {booking.address
+                          ? [
+                              booking.address.address,
+                              booking.address.city,
+                              booking.address.state,
+                            ]
+                              .filter(Boolean)
+                              .join(", ")
+                          : "—"}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Actions */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <Button variant="outline" className="h-12">
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Chat with Provider
-          </Button>
-          <Button variant="outline" className="h-12">
-            <Phone className="w-4 h-4 mr-2" />
-            Call Provider
-          </Button>
-        </div>
+                <Separator />
 
-        {/* Next Steps */}
-        <Card className="border-ink/12 shadow-hard-sm mb-8">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">What's Next?</h3>
-            <div className="space-y-3">
-              {[
-                "Your provider will confirm arrival 30 mins before",
-                "You'll receive an OTP to verify service completion",
-                "Rate your experience after the cleaning is done",
-                "Earn loyalty points for your next booking",
-              ].map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-brand">
-                      {i + 1}
+                {/* Pricing */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Subtotal</span>
+                    <span className="text-slate-700">{naira(booking.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Add-ons</span>
+                    <span className="text-slate-700">{naira(booking.addonTotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Platform Fee</span>
+                    <span className="text-slate-700">{naira(booking.platformFee)}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-slate-900">Total</span>
+                    <span className="text-xl font-bold text-brand">
+                      {naira(booking.totalAmount)}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-600">{step}</p>
                 </div>
-              ))}
-            </div>
+
+                <Separator />
+
+                {/* Provider */}
+                <div>
+                  <p className="text-sm text-slate-500 mb-3">Assigned Provider</p>
+                  {booking.provider?.name ? (
+                    <div className="flex items-center gap-3 p-3 bg-cream rounded-md">
+                      <div className="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center">
+                        <span className="text-lg font-bold text-brand">
+                          {booking.provider.name.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">{booking.provider.name}</p>
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            {booking.provider.overallRating ?? "—"}
+                          </span>
+                          <span>{booking.provider.totalJobsCompleted ?? 0} jobs completed</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-cream rounded-md text-sm text-slate-500">
+                      A provider will be assigned shortly. You'll be notified.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -190,11 +224,20 @@ export default function BookingConfirmation() {
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1 h-10">
-              <Download className="w-4 h-4 mr-2" />
-              Receipt
-            </Button>
-            <Button variant="outline" className="flex-1 h-10">
+            <ReceiptDialog bookingId={id}>
+              <Button variant="outline" className="flex-1 h-10" disabled={!id}>
+                <Download className="w-4 h-4 mr-2" />
+                Receipt
+              </Button>
+            </ReceiptDialog>
+            <Button
+              variant="outline"
+              className="flex-1 h-10"
+              onClick={() => {
+                navigator.clipboard?.writeText(window.location.href);
+                toast.success("Link copied");
+              }}
+            >
               <Share2 className="w-4 h-4 mr-2" />
               Share
             </Button>

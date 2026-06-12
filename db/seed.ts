@@ -210,6 +210,7 @@ async function main() {
       city, state, address: `${randInt(1, 40)} Industrial Way`,
       verificationStatus: weighted([["verified", 2], ["pending", 1]]) as any,
       commissionRate: money(15), walletBalance: money(randInt(50000, 800000)),
+      bankName: "GTBank", accountNumber: `0${randInt(100000000, 999999999)}`, accountName: businessDefs[b].name,
       totalJobsCompleted: randInt(20, 300), overallRating: money(randInt(38, 49) / 10),
       totalReviews: randInt(10, 120), isActive: true,
     });
@@ -326,6 +327,32 @@ async function main() {
       status: weighted([["open", 3], ["under_review", 2], ["resolved_customer", 1]]) as any,
       createdAt: daysAgo(randInt(1, 40)),
     });
+  }
+
+  // ── Notifications (so the bell has content) ───────────────────
+  console.log("Seeding notifications…");
+  const notifTemplates = [
+    { type: "booking_confirmed", title: "Booking confirmed", body: "Your cleaning has been confirmed." },
+    { type: "provider_assigned", title: "Cleaner assigned", body: "A verified cleaner is on the way to your booking." },
+    { type: "service_completed", title: "Service completed", body: "Your cleaning is done — please rate your experience." },
+    { type: "payment_received", title: "Payment received", body: "We received your payment. Thank you!" },
+    { type: "promo", title: "20% off your next clean", body: "Use code WELCOME10 at checkout this week." },
+    { type: "review_request", title: "How did we do?", body: "Leave a review and earn loyalty points." },
+  ];
+  for (const cid of customerIds) {
+    const n = randInt(2, 5);
+    for (let k = 0; k < n; k++) {
+      const t = pick(notifTemplates);
+      await db.insert(notifications).values({
+        userId: cid,
+        type: t.type as any,
+        title: t.title,
+        body: t.body,
+        actionUrl: "/dashboard",
+        isRead: Math.random() > 0.5,
+        createdAt: daysAgo(randInt(0, 20)),
+      });
+    }
   }
 
   // ── Platform settings + coupons ───────────────────────────────

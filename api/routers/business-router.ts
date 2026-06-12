@@ -100,6 +100,9 @@ export const businessRouter = createRouter({
         state: z.string().optional(),
         registrationNumber: z.string().optional(),
         logo: z.string().optional(),
+        bankName: z.string().optional(),
+        accountNumber: z.string().optional(),
+        accountName: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -383,14 +386,7 @@ export const businessRouter = createRouter({
   }),
 
   requestWithdrawal: businessQuery
-    .input(
-      z.object({
-        amount: z.string(),
-        bankName: z.string().optional(),
-        accountNumber: z.string().optional(),
-        accountName: z.string().optional(),
-      })
-    )
+    .input(z.object({ amount: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const db = getDb();
       const biz = await requireOwnedBusiness(ctx.user.id);
@@ -403,13 +399,20 @@ export const businessRouter = createRouter({
           message: "Amount exceeds your available balance.",
         });
       }
+      // Payout requires a bank account on file (set under Profile → Bank account).
+      if (!biz.bankName || !biz.accountNumber) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Add a bank account in your profile before requesting a payout.",
+        });
+      }
       await db.insert(withdrawals).values({
         businessId: biz.id,
         amount: input.amount,
         status: "pending",
-        bankName: input.bankName,
-        accountNumber: input.accountNumber,
-        accountName: input.accountName,
+        bankName: biz.bankName,
+        accountNumber: biz.accountNumber,
+        accountName: biz.accountName,
       });
       return { success: true };
     }),

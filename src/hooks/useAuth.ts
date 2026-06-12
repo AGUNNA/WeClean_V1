@@ -10,7 +10,9 @@ export function useAuth() {
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
       utils.auth.me.invalidate();
-      window.location.reload();
+      // Hard-redirect home so protected dashboards (admin/business/provider)
+      // are fully torn down and the user lands logged-out.
+      window.location.href = "/";
     },
   });
 

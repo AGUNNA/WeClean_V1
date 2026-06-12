@@ -223,6 +223,10 @@ export const businesses = sqliteTable("businesses", {
     .notNull(),
   commissionRate: text("commissionRate").default("15.00"),
   walletBalance: text("walletBalance").default("0.00"),
+  // Payout / bank account
+  bankName: text("bankName"),
+  accountNumber: text("accountNumber"),
+  accountName: text("accountName"),
   totalJobsCompleted: integer("totalJobsCompleted").default(0),
   overallRating: text("overallRating").default("0.00"),
   totalReviews: integer("totalReviews").default(0),

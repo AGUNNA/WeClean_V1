@@ -4,34 +4,29 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard,
   ClipboardList,
-  Users,
-  Sparkles,
-  Wallet,
-  Building2,
+  User as UserIcon,
+  Briefcase,
   ChevronLeft,
   LogOut,
   Menu,
   X,
 } from "lucide-react";
 
-const businessNavItems = [
-  { label: "Dashboard", href: "/business", icon: LayoutDashboard },
-  { label: "Bookings", href: "/business/bookings", icon: ClipboardList },
-  { label: "Staff", href: "/business/staff", icon: Users },
-  { label: "Services", href: "/business/services", icon: Sparkles },
-  { label: "Earnings", href: "/business/earnings", icon: Wallet },
-  { label: "Profile", href: "/business/profile", icon: Building2 },
+const providerNavItems = [
+  { label: "Dashboard", href: "/provider", icon: LayoutDashboard },
+  { label: "My Jobs", href: "/provider/jobs", icon: ClipboardList },
+  { label: "Profile", href: "/provider/profile", icon: UserIcon },
 ];
 
-export default function BusinessLayout() {
-  const { isBusiness, isLoading, logout, user } = useAuth();
+export default function ProviderLayout() {
+  const { isProvider, isLoading, logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !isBusiness) navigate("/");
-  }, [isBusiness, isLoading, navigate]);
+    if (!isLoading && !isProvider) navigate("/");
+  }, [isProvider, isLoading, navigate]);
 
   useEffect(() => setOpen(false), [location.pathname]);
 
@@ -43,22 +38,21 @@ export default function BusinessLayout() {
     );
   }
 
-  if (!isBusiness) return null;
+  if (!isProvider) return null;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile top bar */}
       <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 bg-ink text-white">
-        <Link to="/business" className="flex items-center gap-2">
-          <Building2 className="w-5 h-5 text-brand" />
-          <span className="font-display font-bold">Business Hub</span>
+        <Link to="/provider" className="flex items-center gap-2">
+          <Briefcase className="w-5 h-5 text-brand" />
+          <span className="font-display font-bold">Provider</span>
         </Link>
         <button onClick={() => setOpen(true)} aria-label="Open menu" className="p-2 -mr-2">
           <Menu className="w-6 h-6" />
         </button>
       </div>
 
-      {/* Backdrop (mobile) */}
       {open && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -73,14 +67,14 @@ export default function BusinessLayout() {
         }`}
       >
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
-          <Link to="/business" className="flex items-center gap-2">
+          <Link to="/provider" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded-sm flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-white" />
+              <Briefcase className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="text-sm font-bold text-white">Business Hub</span>
+              <span className="text-sm font-bold text-white">Provider</span>
               <span className="block text-[10px] text-cream/40 uppercase tracking-wider truncate max-w-[120px]">
-                {user?.name || "WeClean Partner"}
+                {user?.name || "WeClean Pro"}
               </span>
             </div>
           </Link>
@@ -90,7 +84,7 @@ export default function BusinessLayout() {
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {businessNavItems.map((item) => {
+          {providerNavItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link
@@ -127,7 +121,6 @@ export default function BusinessLayout() {
         </div>
       </aside>
 
-      {/* Main */}
       <main className="lg:ml-64 min-w-0">
         <Outlet />
       </main>

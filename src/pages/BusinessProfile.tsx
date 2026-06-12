@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/providers/trpc";
 import { toast } from "sonner";
 import ProfileSettings from "@/components/ProfileSettings";
-import { Building2 } from "lucide-react";
+import { Building2, Banknote } from "lucide-react";
 
 export default function BusinessProfile() {
   const utils = trpc.useUtils();
@@ -25,6 +25,7 @@ export default function BusinessProfile() {
     state: "",
     registrationNumber: "",
   });
+  const [bank, setBank] = useState({ bankName: "", accountNumber: "", accountName: "" });
 
   useEffect(() => {
     if (biz) {
@@ -38,6 +39,11 @@ export default function BusinessProfile() {
         city: biz.city ?? "",
         state: biz.state ?? "",
         registrationNumber: biz.registrationNumber ?? "",
+      });
+      setBank({
+        bankName: biz.bankName ?? "",
+        accountNumber: biz.accountNumber ?? "",
+        accountName: biz.accountName ?? "",
       });
     }
   }, [biz]);
@@ -55,7 +61,7 @@ export default function BusinessProfile() {
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Business Profile</h1>
         <p className="text-slate-500 text-sm mt-1">
@@ -141,6 +147,54 @@ export default function BusinessProfile() {
                 </Button>
               </>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Bank account / payout details */}
+        <Card className="border-ink/12 shadow-hard-sm">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Banknote className="w-4 h-4 text-brand" />
+              Bank account (payouts)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-slate-500">
+              Where we send your withdrawals. Required before requesting a payout.
+            </p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label>Bank name</Label>
+                <Input
+                  value={bank.bankName}
+                  onChange={(e) => setBank((b) => ({ ...b, bankName: e.target.value }))}
+                  placeholder="e.g. GTBank"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Account number</Label>
+                <Input
+                  value={bank.accountNumber}
+                  onChange={(e) => setBank((b) => ({ ...b, accountNumber: e.target.value }))}
+                  placeholder="0123456789"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Account name</Label>
+                <Input
+                  value={bank.accountName}
+                  onChange={(e) => setBank((b) => ({ ...b, accountName: e.target.value }))}
+                  placeholder="Account holder name"
+                />
+              </div>
+            </div>
+            <Button
+              className="bg-ink hover:bg-brand text-white"
+              disabled={update.isPending}
+              onClick={() => update.mutate(bank)}
+            >
+              Save bank account
+            </Button>
           </CardContent>
         </Card>
 

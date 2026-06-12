@@ -4,6 +4,7 @@ import { lazy, Suspense } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import AdminLayout from "@/components/layout/AdminLayout";
 import BusinessLayout from "@/components/layout/BusinessLayout";
+import ProviderLayout from "@/components/layout/ProviderLayout";
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import("@/pages/Home"));
@@ -13,6 +14,8 @@ const BookingFlow = lazy(() => import("@/pages/BookingFlow"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 const CustomerDashboard = lazy(() => import("@/pages/CustomerDashboard"));
 const ProviderDashboard = lazy(() => import("@/pages/ProviderDashboard"));
+const ProviderJobs = lazy(() => import("@/pages/ProviderJobs"));
+const ProviderProfile = lazy(() => import("@/pages/ProviderProfile"));
 const ProviderOnboarding = lazy(() => import("@/pages/ProviderOnboarding"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const AdminBookings = lazy(() => import("@/pages/AdminBookings"));
@@ -54,7 +57,6 @@ export default function App() {
             <Route path="/book/:serviceId" element={<BookingFlow />} />
             <Route path="/booking/confirmation/:bookingId" element={<BookingConfirmation />} />
             <Route path="/dashboard" element={<CustomerDashboard />} />
-            <Route path="/provider" element={<ProviderDashboard />} />
             <Route path="/provider/onboarding" element={<ProviderOnboarding />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
@@ -70,6 +72,13 @@ export default function App() {
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+          </Route>
+
+          {/* Provider Routes */}
+          <Route element={<ProviderLayout />}>
+            <Route path="/provider" element={<ProviderDashboard />} />
+            <Route path="/provider/jobs" element={<ProviderJobs />} />
+            <Route path="/provider/profile" element={<ProviderProfile />} />
           </Route>
 
           {/* Business Routes */}

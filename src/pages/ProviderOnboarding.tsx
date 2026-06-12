@@ -98,7 +98,7 @@ export default function ProviderOnboarding() {
         </div>
 
         <Card className="border-ink/12 shadow-hard">
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-6 lg:p-8">
             {/* Step 1: Personal Info */}
             {step === 1 && (
               <div className="space-y-6">

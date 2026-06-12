@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
+import { trpc } from "@/providers/trpc";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,8 +51,12 @@ const addons = [
 ];
 
 export default function BookingFlow() {
-  useParams<{ serviceId: string }>();
+  const { serviceId } = useParams<{ serviceId: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const createAddress = trpc.address.create.useMutation();
+  const createBooking = trpc.booking.create.useMutation();
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
@@ -81,11 +88,65 @@ export default function BookingFlow() {
     );
   };
 
-  const handleContinue = () => {
-    if (step < 4) setStep(step + 1);
-    else {
-      // Submit booking
-      navigate("/booking/confirmation/123");
+  const handleContinue = async () => {
+    if (step < 4) {
+      setStep(step + 1);
+      return;
+    }
+    // Final step → persist the booking.
+    if (!isAuthenticated) {
+      toast.error("Please sign in to complete your booking.");
+      navigate("/login");
+      return;
+    }
+    const svcId = Number(serviceId);
+    if (!svcId) {
+      toast.error("Invalid service. Please start again from Services.");
+      return;
+    }
+    try {
+      setSubmitting(true);
+      // 1) Save the delivery address
+      const addr = await createAddress.mutateAsync({
+        label: address.label || "Home",
+        address: address.street,
+        city: address.city,
+        state: address.state,
+        accessInstructions: address.accessInfo || undefined,
+      });
+      // 2) Create the booking
+      const scheduled = (selectedDate ?? new Date()).toISOString();
+      const res = await createBooking.mutateAsync({
+        addressId: addr.id,
+        scheduledDate: scheduled,
+        preferredTimeStart: selectedTime || undefined,
+        bookingType: "scheduled",
+        propertyType: "apartment",
+        propertySize: propertySize || undefined,
+        numberOfRooms: roomCount,
+        numberOfBathrooms: bathroomCount,
+        specialInstructions: instructions || undefined,
+        items: [
+          {
+            serviceId: svcId,
+            quantity: 1,
+            propertySize: propertySize || undefined,
+            numberOfRooms: roomCount,
+            useEcoProducts: selectedAddons.includes("eco"),
+          },
+        ],
+        subtotal: String(basePrice),
+        addonTotal: String(addonsPrice),
+        platformFee: String(platformFee),
+        totalAmount: String(total),
+        source: "web",
+      });
+      toast.success("Booking confirmed!");
+      navigate(`/booking/confirmation/${res.bookingId}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not create booking.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -585,10 +646,14 @@ export default function BookingFlow() {
 
                 <Button
                   className="w-full bg-brand hover:bg-brand-700 text-white h-12"
-                  disabled={!canContinue()}
+                  disabled={!canContinue() || submitting}
                   onClick={handleContinue}
                 >
-                  {step === 4 ? "Confirm & Pay" : "Continue"}
+                  {submitting
+                    ? "Confirming…"
+                    : step === 4
+                    ? "Confirm & Pay"
+                    : "Continue"}
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
 
