@@ -4,10 +4,10 @@ import { Home, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-cream flex items-center justify-center p-4">
       <div className="text-center max-w-md">
-        <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <span className="text-4xl font-bold text-blue-600">404</span>
+        <div className="w-24 h-24 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <span className="text-4xl font-bold text-brand">404</span>
         </div>
         <h1 className="text-2xl font-bold text-slate-900 mb-2">
           Page Not Found
@@ -24,7 +24,7 @@ export default function NotFound() {
             Go Back
           </Button>
           <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-brand hover:bg-brand-700 text-white"
             asChild
           >
             <Link to="/">

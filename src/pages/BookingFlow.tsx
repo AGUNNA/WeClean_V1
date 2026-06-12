@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CalendarDays,
-  Clock,
   Home,
   Plus,
   Minus,
@@ -49,7 +48,7 @@ const addons = [
 ];
 
 export default function BookingFlow() {
-  const { serviceId } = useParams<{ serviceId: string }>();
+  useParams<{ serviceId: string }>();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -106,12 +105,12 @@ export default function BookingFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-cream py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <button
           onClick={() => step > 1 ? setStep(step - 1) : navigate("/services")}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 mb-6"
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-brand mb-6"
         >
           <ChevronLeft className="w-4 h-4" />
           {step > 1 ? "Back" : "Back to Services"}
@@ -131,7 +130,7 @@ export default function BookingFlow() {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
                   s <= step
-                    ? "bg-blue-600 text-white"
+                    ? "bg-brand text-white"
                     : "bg-slate-200 text-slate-500"
                 }`}
               >
@@ -139,7 +138,7 @@ export default function BookingFlow() {
               </div>
               <span
                 className={`text-xs font-medium hidden sm:block ${
-                  s <= step ? "text-blue-600" : "text-slate-400"
+                  s <= step ? "text-brand" : "text-slate-400"
                 }`}
               >
                 {s === 1 && "Schedule"}
@@ -150,7 +149,7 @@ export default function BookingFlow() {
               {i < 3 && (
                 <div
                   className={`flex-1 h-0.5 ${
-                    s < step ? "bg-blue-600" : "bg-slate-200"
+                    s < step ? "bg-brand" : "bg-slate-200"
                   }`}
                 />
               )}
@@ -166,7 +165,7 @@ export default function BookingFlow() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <CalendarDays className="w-5 h-5 text-blue-600" />
+                    <CalendarDays className="w-5 h-5 text-brand" />
                     Select Date & Time
                   </CardTitle>
                 </CardHeader>
@@ -194,7 +193,7 @@ export default function BookingFlow() {
                           onClick={() => setSelectedTime(time)}
                           className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                             selectedTime === time
-                              ? "bg-blue-600 text-white shadow-md"
+                              ? "bg-brand text-white shadow-hard-sm"
                               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                           }`}
                         >
@@ -212,7 +211,7 @@ export default function BookingFlow() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Home className="w-5 h-5 text-blue-600" />
+                    <Home className="w-5 h-5 text-brand" />
                     Property Details
                   </CardTitle>
                 </CardHeader>
@@ -235,12 +234,12 @@ export default function BookingFlow() {
                           />
                           <Label
                             htmlFor={size.value}
-                            className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 hover:border-slate-300 transition-all"
+                            className="flex items-center justify-between p-4 rounded-md border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-brand peer-data-[state=checked]:bg-brand-50 hover:border-slate-300 transition-all"
                           >
                             <span className="text-sm font-medium text-slate-700">
                               {size.label}
                             </span>
-                            <span className="text-sm font-semibold text-blue-600">
+                            <span className="text-sm font-semibold text-brand">
                               N{size.price.toLocaleString()}
                             </span>
                           </Label>
@@ -308,7 +307,7 @@ export default function BookingFlow() {
                       {addons.map((addon) => (
                         <div
                           key={addon.id}
-                          className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-blue-300 transition-colors"
+                          className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-brand transition-colors"
                         >
                           <div className="flex items-center gap-3">
                             <Checkbox
@@ -319,7 +318,7 @@ export default function BookingFlow() {
                               {addon.label}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-blue-600">
+                          <span className="text-sm font-medium text-brand">
                             +N{addon.price.toLocaleString()}
                           </span>
                         </div>
@@ -347,7 +346,7 @@ export default function BookingFlow() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-blue-600" />
+                    <MapPin className="w-5 h-5 text-brand" />
                     Service Address
                   </CardTitle>
                 </CardHeader>
@@ -364,7 +363,7 @@ export default function BookingFlow() {
                             }
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                               address.label === label
-                                ? "bg-blue-600 text-white"
+                                ? "bg-brand text-white"
                                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                             }`}
                           >
@@ -429,7 +428,7 @@ export default function BookingFlow() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-blue-600" />
+                    <CreditCard className="w-5 h-5 text-brand" />
                     Payment
                   </CardTitle>
                 </CardHeader>
@@ -447,10 +446,10 @@ export default function BookingFlow() {
                       />
                       <Label
                         htmlFor="paystack"
-                        className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 hover:border-slate-300 transition-all"
+                        className="flex items-center gap-4 p-4 rounded-md border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-brand peer-data-[state=checked]:bg-brand-50 hover:border-slate-300 transition-all"
                       >
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <CreditCard className="w-5 h-5 text-blue-600" />
+                        <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-brand" />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-slate-900">
@@ -470,7 +469,7 @@ export default function BookingFlow() {
                       />
                       <Label
                         htmlFor="flutterwave"
-                        className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 hover:border-slate-300 transition-all"
+                        className="flex items-center gap-4 p-4 rounded-md border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-brand peer-data-[state=checked]:bg-brand-50 hover:border-slate-300 transition-all"
                       >
                         <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                           <CreditCard className="w-5 h-5 text-purple-600" />
@@ -493,7 +492,7 @@ export default function BookingFlow() {
                       />
                       <Label
                         htmlFor="wallet"
-                        className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 hover:border-slate-300 transition-all"
+                        className="flex items-center gap-4 p-4 rounded-md border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-brand peer-data-[state=checked]:bg-brand-50 hover:border-slate-300 transition-all"
                       >
                         <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                           <Shield className="w-5 h-5 text-green-600" />
@@ -503,7 +502,7 @@ export default function BookingFlow() {
                             Pay with Wallet
                           </p>
                           <p className="text-xs text-slate-500">
-                            Use your CleanPro wallet balance
+                            Use your WeClean wallet balance
                           </p>
                         </div>
                       </Label>
@@ -577,7 +576,7 @@ export default function BookingFlow() {
                     <Separator />
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-slate-900">Total</span>
-                      <span className="text-xl font-bold text-blue-600">
+                      <span className="text-xl font-bold text-brand">
                         N{total.toLocaleString()}
                       </span>
                     </div>
@@ -585,7 +584,7 @@ export default function BookingFlow() {
                 )}
 
                 <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12"
+                  className="w-full bg-brand hover:bg-brand-700 text-white h-12"
                   disabled={!canContinue()}
                   onClick={handleContinue}
                 >

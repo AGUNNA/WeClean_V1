@@ -1,142 +1,197 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Mail, Phone, Fingerprint, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
+import { trpc } from "@/providers/trpc";
+import { toast } from "sonner";
 
-function getOAuthUrl() {
-  const kimiauthUrl = import.meta.env.VITE_KIMI_AUTH_URL;
-  const appID = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
-  const state = btoa(redirectUri);
+const DEMO_ACCOUNTS = [
+  { account: "customer" as const, label: "Customer" },
+  { account: "business" as const, label: "Business" },
+  { account: "provider" as const, label: "Provider" },
+  { account: "admin" as const, label: "Admin" },
+];
 
-  const url = new URL(`${kimiauthUrl}/api/oauth/authorize`);
-  url.searchParams.set("client_id", appID);
-  url.searchParams.set("redirect_uri", redirectUri);
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "profile");
-  url.searchParams.set("state", state);
-
-  return url.toString();
+function routeFor(role: string) {
+  if (role === "admin" || role === "superadmin") return "/admin";
+  if (role === "business") return "/business";
+  if (role === "provider" || role === "company") return "/provider";
+  return "/dashboard";
 }
 
 export default function Login() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
+  const utils = trpc.useUtils();
+
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"user" | "business" | "provider">("user");
+
+  const login = trpc.auth.login.useMutation();
+  const register = trpc.auth.register.useMutation();
+  const demoLogin = trpc.auth.demoLogin.useMutation();
+
+  async function afterAuth(roleResult: string, label: string) {
+    await utils.auth.me.invalidate();
+    toast.success(`Signed in${label ? ` as ${label}` : ""}`);
+    navigate(routeFor(roleResult));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      if (mode === "login") {
+        const res = await login.mutateAsync({ email, password });
+        await afterAuth(res.role, "");
+      } else {
+        const res = await register.mutateAsync({ name, email, password, role });
+        await afterAuth(res.role, "");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    }
+  }
+
+  async function quickDemo(account: (typeof DEMO_ACCOUNTS)[number]) {
+    try {
+      const res = await demoLogin.mutateAsync({ account: account.account });
+      await afterAuth(res.role, account.label);
+    } catch {
+      toast.error("Demo login failed");
+    }
+  }
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
-    }
+    if (isAuthenticated) navigate("/");
   }, [isAuthenticated, navigate]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand" />
       </div>
     );
   }
 
+  const busy = login.isPending || register.isPending;
+
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back */}
         <button
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 mb-8 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-ink/60 hover:text-ink mb-10 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to home
         </button>
 
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-600/20">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome Back</h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Sign in to access your account
+        <div className="mb-7">
+          <span className="font-display text-2xl font-bold text-ink tracking-tight">
+            We<span className="text-brand">Clean</span>
+          </span>
+          <h1 className="font-display text-3xl font-bold text-ink mt-4">
+            {mode === "login" ? "Sign in" : "Create your account"}
+          </h1>
+          <p className="text-ink/60 text-sm mt-1.5">
+            {mode === "login"
+              ? "Welcome back — enter your details."
+              : "Join WeClean in under a minute."}
           </p>
         </div>
 
-        <Card className="border-0 shadow-xl">
-          <CardContent className="p-6 space-y-4">
-            {/* OAuth Login */}
-            <Button
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium"
-              onClick={() => {
-                window.location.href = getOAuthUrl();
-              }}
-            >
-              <Fingerprint className="w-5 h-5 mr-2" />
-              Continue with Kimi OAuth
-            </Button>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-4 text-slate-400">
-                  Other sign-in methods
-                </span>
-              </div>
+        {/* Email / password form */}
+        <form
+          onSubmit={handleSubmit}
+          className="border-2 border-ink rounded-lg bg-paper p-6 space-y-4"
+        >
+          {mode === "register" && (
+            <div className="space-y-1.5">
+              <Label>Full name</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ada Obi" required />
             </div>
-
-            {/* Alternative Login Methods */}
-            <div className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full h-12 justify-start text-slate-600 hover:bg-slate-50"
-                disabled
-              >
-                <Mail className="w-5 h-5 mr-3 text-slate-400" />
-                Sign in with Email
-                <span className="ml-auto text-xs text-slate-400">
-                  Coming soon
-                </span>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full h-12 justify-start text-slate-600 hover:bg-slate-50"
-                disabled
-              >
-                <Phone className="w-5 h-5 mr-3 text-slate-400" />
-                Sign in with Phone (OTP)
-                <span className="ml-auto text-xs text-slate-400">
-                  Coming soon
-                </span>
-              </Button>
+          )}
+          <div className="space-y-1.5">
+            <Label>Email</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Password</Label>
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+          </div>
+          {mode === "register" && (
+            <div className="space-y-1.5">
+              <Label>Account type</Label>
+              <Select value={role} onValueChange={(v) => setRole(v as never)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Customer — book cleanings</SelectItem>
+                  <SelectItem value="business">Business — run a cleaning company</SelectItem>
+                  <SelectItem value="provider">Provider — work as a cleaner</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </CardContent>
-        </Card>
+          )}
 
-        {/* Sign up link */}
-        <p className="text-center text-sm text-slate-500 mt-6">
-          Don't have an account?{" "}
-          <button
-            onClick={() => navigate("/provider/onboarding")}
-            className="text-blue-600 hover:underline font-medium"
+          <Button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-ink hover:bg-brand text-white h-11"
           >
-            Become a Provider
-          </button>
-        </p>
+            {busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
+          </Button>
 
-        {/* Trust badges */}
-        <div className="flex items-center justify-center gap-4 mt-8">
-          <span className="text-xs text-slate-400">Secured by</span>
-          <span className="px-2 py-1 bg-white rounded border text-xs font-medium text-slate-500">
-            SSL
-          </span>
-          <span className="px-2 py-1 bg-white rounded border text-xs font-medium text-slate-500">
-            OAuth 2.0
-          </span>
-          <span className="px-2 py-1 bg-white rounded border text-xs font-medium text-slate-500">
-            JWT
-          </span>
+          <p className="text-center text-sm text-ink/60">
+            {mode === "login" ? "New to WeClean?" : "Already have an account?"}{" "}
+            <button
+              type="button"
+              onClick={() => setMode(mode === "login" ? "register" : "login")}
+              className="font-semibold text-brand hover:underline"
+            >
+              {mode === "login" ? "Create an account" : "Sign in"}
+            </button>
+          </p>
+        </form>
+
+        {/* Demo quick access */}
+        <div className="mt-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-px flex-1 bg-ink/15" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-ink/45">
+              Or try a demo account
+            </span>
+            <div className="h-px flex-1 bg-ink/15" />
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {DEMO_ACCOUNTS.map((acc) => (
+              <button
+                key={acc.account}
+                disabled={demoLogin.isPending}
+                onClick={() => quickDemo(acc)}
+                className="border-2 border-ink/15 rounded-md py-2.5 text-xs font-semibold text-ink hover:bg-ink hover:text-white transition-colors disabled:opacity-60"
+              >
+                {acc.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-center text-xs text-ink/45 mt-3">
+            Demo accounts use password <span className="font-mono text-ink/70">password123</span>
+          </p>
         </div>
       </div>
     </div>

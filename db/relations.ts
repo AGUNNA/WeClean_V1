@@ -5,6 +5,8 @@ import {
   services,
   serviceAddons,
   providerProfiles,
+  businesses,
+  businessStaff,
   providerServices,
   addresses,
   bookings,
@@ -36,6 +38,33 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   reviewsAsCustomer: many(reviews, { relationName: "customerReviews" }),
   notifications: many(notifications),
   favoriteProviders: many(favoriteProviders),
+  ownedBusiness: one(businesses, {
+    fields: [users.id],
+    references: [businesses.ownerId],
+  }),
+  staffMemberships: many(businessStaff),
+}));
+
+// ── BUSINESS RELATIONS ──────────────────────────────────────────
+export const businessesRelations = relations(businesses, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [businesses.ownerId],
+    references: [users.id],
+  }),
+  staff: many(businessStaff),
+  bookings: many(bookings),
+}));
+
+// ── BUSINESS STAFF RELATIONS ────────────────────────────────────
+export const businessStaffRelations = relations(businessStaff, ({ one }) => ({
+  business: one(businesses, {
+    fields: [businessStaff.businessId],
+    references: [businesses.id],
+  }),
+  user: one(users, {
+    fields: [businessStaff.userId],
+    references: [users.id],
+  }),
 }));
 
 // ── SERVICE CATEGORY RELATIONS ──────────────────────────────────
@@ -125,6 +154,10 @@ export const bookingsRelations = relations(bookings, ({ one, many }) => ({
     fields: [bookings.providerId],
     references: [providerProfiles.id],
     relationName: "providerBookings",
+  }),
+  business: one(businesses, {
+    fields: [bookings.businessId],
+    references: [businesses.id],
   }),
   address: one(addresses, {
     fields: [bookings.addressId],

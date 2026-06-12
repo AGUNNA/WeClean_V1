@@ -49,7 +49,7 @@ export const messageRouter = createRouter({
         attachmentUrl: input.attachmentUrl,
       });
 
-      return { success: true, id: Number((result as any).insertId) };
+      return { success: true, id: Number((result as any).lastInsertRowid) };
     }),
 
   // ── Get Messages for Booking ────────────────────────────────────

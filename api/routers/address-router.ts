@@ -69,7 +69,7 @@ export const addressRouter = createRouter({
         ...input,
       });
 
-      return { success: true, id: Number((result as any).insertId) };
+      return { success: true, id: Number((result as any).lastInsertRowid) };
     }),
 
   // ── Update Address ──────────────────────────────────────────────

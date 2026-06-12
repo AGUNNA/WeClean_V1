@@ -83,7 +83,7 @@ export const reviewRouter = createRouter({
         })
         .where(eq(providerProfiles.id, input.providerId));
 
-      return { success: true, id: Number((result as any).insertId) };
+      return { success: true, id: Number((result as any).lastInsertRowid) };
     }),
 
   // ── Get Provider Reviews ────────────────────────────────────────
@@ -124,7 +124,7 @@ export const reviewRouter = createRouter({
         response: z.string().min(1),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const db = getDb();
       await db
         .update(reviews)

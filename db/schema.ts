@@ -1,374 +1,429 @@
 import {
-  mysqlTable,
-  mysqlEnum,
-  serial,
-  varchar,
+  sqliteTable,
   text,
-  timestamp,
-  bigint,
-  int,
-  decimal,
-  boolean,
-  json,
+  integer,
   index,
   uniqueIndex,
-} from "drizzle-orm/mysql-core";
+} from "drizzle-orm/sqlite-core";
+
+// ── Shared column helpers ───────────────────────────────────────
+// Money is stored as TEXT (e.g. "1200.00") so the existing router math
+// (parseFloat / toFixed) keeps working unchanged. Timestamps are stored as
+// unix epoch integers and surfaced as JS Date via mode: "timestamp".
+const createdAt = () =>
+  integer("createdAt", { mode: "timestamp" })
+    .$defaultFn(() => new Date())
+    .notNull();
+
+const updatedAt = () =>
+  integer("updatedAt", { mode: "timestamp" })
+    .$defaultFn(() => new Date())
+    .$onUpdate(() => new Date())
+    .notNull();
 
 // ── 1. USERS (extended from base auth) ──────────────────────────
-export const users = mysqlTable("users", {
-  id: serial("id").primaryKey(),
-  unionId: varchar("unionId", { length: 255 }).notNull().unique(),
-  name: varchar("name", { length: 255 }),
-  email: varchar("email", { length: 320 }),
-  phone: varchar("phone", { length: 20 }),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  unionId: text("unionId").notNull().unique(),
+  name: text("name"),
+  email: text("email"),
+  passwordHash: text("passwordHash"),
+  phone: text("phone"),
   avatar: text("avatar"),
-  role: mysqlEnum("role", ["user", "provider", "company", "admin", "superadmin"])
+  role: text("role", {
+    enum: ["user", "provider", "business", "company", "admin", "superadmin"],
+  })
     .default("user")
     .notNull(),
   // Profile
-  dateOfBirth: timestamp("dateOfBirth"),
-  gender: mysqlEnum("gender", ["male", "female", "other"]),
+  dateOfBirth: integer("dateOfBirth", { mode: "timestamp" }),
+  gender: text("gender", { enum: ["male", "female", "other"] }),
   // Location
-  city: varchar("city", { length: 100 }),
-  state: varchar("state", { length: 100 }),
-  country: varchar("country", { length: 100 }).default("Nigeria"),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  city: text("city"),
+  state: text("state"),
+  country: text("country").default("Nigeria"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
   // Status
-  isActive: boolean("isActive").default(true),
-  isVerified: boolean("isVerified").default(false),
-  emailVerified: boolean("emailVerified").default(false),
-  phoneVerified: boolean("phoneVerified").default(false),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  isVerified: integer("isVerified", { mode: "boolean" }).default(false),
+  emailVerified: integer("emailVerified", { mode: "boolean" }).default(false),
+  phoneVerified: integer("phoneVerified", { mode: "boolean" }).default(false),
   // Metadata
-  referralCode: varchar("referralCode", { length: 20 }),
-  referredBy: bigint("referredBy", { mode: "number", unsigned: true }),
-  loyaltyPoints: int("loyaltyPoints").default(0),
+  referralCode: text("referralCode"),
+  referredBy: integer("referredBy"),
+  loyaltyPoints: integer("loyaltyPoints").default(0),
   // Preferences
-  preferredLanguage: varchar("preferredLanguage", { length: 10 }).default("en"),
-  notificationsEnabled: boolean("notificationsEnabled").default(true),
-  smsEnabled: boolean("smsEnabled").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt")
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-  lastSignInAt: timestamp("lastSignInAt").defaultNow().notNull(),
+  preferredLanguage: text("preferredLanguage").default("en"),
+  notificationsEnabled: integer("notificationsEnabled", {
+    mode: "boolean",
+  }).default(true),
+  smsEnabled: integer("smsEnabled", { mode: "boolean" }).default(true),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+  lastSignInAt: integer("lastSignInAt", { mode: "timestamp" })
+    .$defaultFn(() => new Date())
+    .notNull(),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 // ── 2. SERVICE CATEGORIES ───────────────────────────────────────
-export const serviceCategories = mysqlTable("service_categories", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }).notNull(),
-  slug: varchar("slug", { length: 100 }).notNull().unique(),
+export const serviceCategories = sqliteTable("service_categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
   description: text("description"),
-  icon: varchar("icon", { length: 50 }),
+  icon: text("icon"),
   image: text("image"),
-  displayOrder: int("displayOrder").default(0),
-  isActive: boolean("isActive").default(true),
-  parentId: bigint("parentId", { mode: "number", unsigned: true }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  displayOrder: integer("displayOrder").default(0),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  parentId: integer("parentId"),
+  createdAt: createdAt(),
 });
 
 // ── 3. SERVICES ─────────────────────────────────────────────────
-export const services = mysqlTable("services", {
-  id: serial("id").primaryKey(),
-  categoryId: bigint("categoryId", { mode: "number", unsigned: true })
-    .notNull(),
-  name: varchar("name", { length: 200 }).notNull(),
-  slug: varchar("slug", { length: 200 }).notNull(),
+export const services = sqliteTable("services", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  categoryId: integer("categoryId").notNull(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull(),
   description: text("description"),
-  shortDescription: varchar("shortDescription", { length: 255 }),
+  shortDescription: text("shortDescription"),
   image: text("image"),
-  icon: varchar("icon", { length: 50 }),
+  icon: text("icon"),
   // Pricing
-  basePrice: decimal("basePrice", { precision: 12, scale: 2 }).notNull(),
-  priceType: mysqlEnum("priceType", [
-    "fixed",
-    "per_hour",
-    "per_sqm",
-    "per_room",
-    "custom",
-  ])
+  basePrice: text("basePrice").notNull(),
+  priceType: text("priceType", {
+    enum: ["fixed", "per_hour", "per_sqm", "per_room", "custom"],
+  })
     .default("fixed")
     .notNull(),
-  minPrice: decimal("minPrice", { precision: 12, scale: 2 }),
-  maxPrice: decimal("maxPrice", { precision: 12, scale: 2 }),
-  estimatedDuration: int("estimatedDuration"), // in minutes
+  minPrice: text("minPrice"),
+  maxPrice: text("maxPrice"),
+  estimatedDuration: integer("estimatedDuration"), // in minutes
   // Service config
-  requiresPropertySize: boolean("requiresPropertySize").default(false),
-  requiresRoomCount: boolean("requiresRoomCount").default(false),
-  allowsMaterialsChoice: boolean("allowsMaterialsChoice").default(true), // eco-friendly option
-  isPopular: boolean("isPopular").default(false),
-  isEmergency: boolean("isEmergency").default(false),
+  requiresPropertySize: integer("requiresPropertySize", {
+    mode: "boolean",
+  }).default(false),
+  requiresRoomCount: integer("requiresRoomCount", { mode: "boolean" }).default(
+    false
+  ),
+  allowsMaterialsChoice: integer("allowsMaterialsChoice", {
+    mode: "boolean",
+  }).default(true),
+  isPopular: integer("isPopular", { mode: "boolean" }).default(false),
+  isEmergency: integer("isEmergency", { mode: "boolean" }).default(false),
   // Status
-  isActive: boolean("isActive").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt")
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
 });
 
 // ── 4. SERVICE ADD-ONS ──────────────────────────────────────────
-export const serviceAddons = mysqlTable("service_addons", {
-  id: serial("id").primaryKey(),
-  serviceId: bigint("serviceId", { mode: "number", unsigned: true }).notNull(),
-  name: varchar("name", { length: 200 }).notNull(),
+export const serviceAddons = sqliteTable("service_addons", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  serviceId: integer("serviceId").notNull(),
+  name: text("name").notNull(),
   description: text("description"),
-  price: decimal("price", { precision: 12, scale: 2 }).notNull(),
-  priceType: mysqlEnum("priceType", ["fixed", "per_unit"])
+  price: text("price").notNull(),
+  priceType: text("priceType", { enum: ["fixed", "per_unit"] })
     .default("fixed")
     .notNull(),
-  isActive: boolean("isActive").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  createdAt: createdAt(),
 });
 
 // ── 5. PROVIDER PROFILES ────────────────────────────────────────
-export const providerProfiles = mysqlTable("provider_profiles", {
-  id: serial("id").primaryKey(),
-  userId: bigint("userId", { mode: "number", unsigned: true })
-    .notNull()
-    .unique(),
+export const providerProfiles = sqliteTable("provider_profiles", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull().unique(),
   // Profile info
   bio: text("bio"),
-  yearsOfExperience: int("yearsOfExperience").default(0),
-  companyName: varchar("companyName", { length: 255 }),
-  companyRegistrationNumber: varchar("companyRegistrationNumber", {
-    length: 100,
-  }),
-  website: varchar("website", { length: 255 }),
+  yearsOfExperience: integer("yearsOfExperience").default(0),
+  companyName: text("companyName"),
+  companyRegistrationNumber: text("companyRegistrationNumber"),
+  website: text("website"),
   // Verification
-  idType: mysqlEnum("idType", [
-    "nin",
-    "drivers_license",
-    "passport",
-    "voters_card",
-  ]),
-  idNumber: varchar("idNumber", { length: 100 }),
+  idType: text("idType", {
+    enum: ["nin", "drivers_license", "passport", "voters_card"],
+  }),
+  idNumber: text("idNumber"),
   idDocumentUrl: text("idDocumentUrl"),
-  bvn: varchar("bvn", { length: 11 }),
-  bvnVerified: boolean("bvnVerified").default(false),
-  backgroundCheckStatus: mysqlEnum("backgroundCheckStatus", [
-    "pending",
-    "in_progress",
-    "verified",
-    "failed",
-  ]).default("pending"),
-  backgroundCheckDate: timestamp("backgroundCheckDate"),
+  bvn: text("bvn"),
+  bvnVerified: integer("bvnVerified", { mode: "boolean" }).default(false),
+  backgroundCheckStatus: text("backgroundCheckStatus", {
+    enum: ["pending", "in_progress", "verified", "failed"],
+  }).default("pending"),
+  backgroundCheckDate: integer("backgroundCheckDate", { mode: "timestamp" }),
   // Insurance
-  hasInsurance: boolean("hasInsurance").default(false),
-  insuranceProvider: varchar("insuranceProvider", { length: 255 }),
+  hasInsurance: integer("hasInsurance", { mode: "boolean" }).default(false),
+  insuranceProvider: text("insuranceProvider"),
   insuranceDocumentUrl: text("insuranceDocumentUrl"),
   // Certifications (JSON array)
-  certifications: json("certifications"),
+  certifications: text("certifications", { mode: "json" }),
   // Work area
-  serviceRadius: int("serviceRadius").default(10), // km
-  city: varchar("city", { length: 100 }),
-  state: varchar("state", { length: 100 }),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  serviceRadius: integer("serviceRadius").default(10), // km
+  city: text("city"),
+  state: text("state"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
   // Financial
-  bankName: varchar("bankName", { length: 255 }),
-  accountNumber: varchar("accountNumber", { length: 20 }),
-  accountName: varchar("accountName", { length: 255 }),
-  walletBalance: decimal("walletBalance", { precision: 12, scale: 2 }).default(
-    "0.00"
-  ),
+  bankName: text("bankName"),
+  accountNumber: text("accountNumber"),
+  accountName: text("accountName"),
+  walletBalance: text("walletBalance").default("0.00"),
   // Performance
-  overallRating: decimal("overallRating", { precision: 3, scale: 2 }).default(
-    "0.00"
-  ),
-  totalReviews: int("totalReviews").default(0),
-  totalJobsCompleted: int("totalJobsCompleted").default(0),
-  completionRate: decimal("completionRate", { precision: 5, scale: 2 }).default(
-    "0.00"
-  ),
-  responseTime: int("responseTime"), // average in minutes
+  overallRating: text("overallRating").default("0.00"),
+  totalReviews: integer("totalReviews").default(0),
+  totalJobsCompleted: integer("totalJobsCompleted").default(0),
+  completionRate: text("completionRate").default("0.00"),
+  responseTime: integer("responseTime"), // average in minutes
   // Subscription
-  subscriptionTier: mysqlEnum("subscriptionTier", [
-    "free",
-    "basic",
-    "premium",
-    "enterprise",
-  ]).default("free"),
-  subscriptionExpiry: timestamp("subscriptionExpiry"),
+  subscriptionTier: text("subscriptionTier", {
+    enum: ["free", "basic", "premium", "enterprise"],
+  }).default("free"),
+  subscriptionExpiry: integer("subscriptionExpiry", { mode: "timestamp" }),
   // Status
-  verificationStatus: mysqlEnum("verificationStatus", [
-    "unverified",
-    "pending",
-    "verified",
-    "rejected",
-  ]).default("unverified"),
-  isAvailable: boolean("isAvailable").default(true),
-  isOnVacation: boolean("isOnVacation").default(false),
-  vacationUntil: timestamp("vacationUntil"),
+  verificationStatus: text("verificationStatus", {
+    enum: ["unverified", "pending", "verified", "rejected"],
+  }).default("unverified"),
+  isAvailable: integer("isAvailable", { mode: "boolean" }).default(true),
+  isOnVacation: integer("isOnVacation", { mode: "boolean" }).default(false),
+  vacationUntil: integer("vacationUntil", { mode: "timestamp" }),
   // Badge
-  badge: mysqlEnum("badge", ["none", "bronze", "silver", "gold", "platinum"]).default("none"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt")
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
+  badge: text("badge", {
+    enum: ["none", "bronze", "silver", "gold", "platinum"],
+  }).default("none"),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
 });
 
+// ── 5b. BUSINESSES (company employing provider staff) ───────────
+export const businesses = sqliteTable("businesses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerId: integer("ownerId").notNull().unique(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  registrationNumber: text("registrationNumber"),
+  logo: text("logo"),
+  description: text("description"),
+  email: text("email"),
+  phone: text("phone"),
+  website: text("website"),
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  country: text("country").default("Nigeria"),
+  verificationStatus: text("verificationStatus", {
+    enum: ["unverified", "pending", "verified", "rejected"],
+  })
+    .default("unverified")
+    .notNull(),
+  commissionRate: text("commissionRate").default("15.00"),
+  walletBalance: text("walletBalance").default("0.00"),
+  totalJobsCompleted: integer("totalJobsCompleted").default(0),
+  overallRating: text("overallRating").default("0.00"),
+  totalReviews: integer("totalReviews").default(0),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+export type Business = typeof businesses.$inferSelect;
+export type InsertBusiness = typeof businesses.$inferInsert;
+
+// ── 5c. BUSINESS STAFF (providers employed by a business) ───────
+export const businessStaff = sqliteTable(
+  "business_staff",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    businessId: integer("businessId").notNull(),
+    userId: integer("userId").notNull(),
+    role: text("role", { enum: ["owner", "manager", "cleaner"] })
+      .default("cleaner")
+      .notNull(),
+    status: text("status", { enum: ["invited", "active", "suspended"] })
+      .default("invited")
+      .notNull(),
+    invitedAt: integer("invitedAt", { mode: "timestamp" }),
+    joinedAt: integer("joinedAt", { mode: "timestamp" }),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    uniqueIndex("idx_business_staff_unique").on(
+      table.businessId,
+      table.userId
+    ),
+    index("idx_business_staff_business").on(table.businessId),
+  ]
+);
+
+export type BusinessStaff = typeof businessStaff.$inferSelect;
+
+// ── 5d. BUSINESS SERVICES (services a business offers) ──────────
+export const businessServices = sqliteTable(
+  "business_services",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    businessId: integer("businessId").notNull(),
+    serviceId: integer("serviceId").notNull(),
+    customPrice: text("customPrice"),
+    isActive: integer("isActive", { mode: "boolean" }).default(true),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    uniqueIndex("idx_business_service_unique").on(
+      table.businessId,
+      table.serviceId
+    ),
+  ]
+);
+
 // ── 6. PROVIDER SERVICES (what services a provider offers) ──────
-export const providerServices = mysqlTable("provider_services", {
-  id: serial("id").primaryKey(),
-  providerId: bigint("providerId", { mode: "number", unsigned: true }).notNull(),
-  serviceId: bigint("serviceId", { mode: "number", unsigned: true }).notNull(),
-  customPrice: decimal("customPrice", { precision: 12, scale: 2 }),
-  isActive: boolean("isActive").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+export const providerServices = sqliteTable("provider_services", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  providerId: integer("providerId").notNull(),
+  serviceId: integer("serviceId").notNull(),
+  customPrice: text("customPrice"),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  createdAt: createdAt(),
 });
 
 // ── 7. SAVED ADDRESSES ──────────────────────────────────────────
-export const addresses = mysqlTable("addresses", {
-  id: serial("id").primaryKey(),
-  userId: bigint("userId", { mode: "number", unsigned: true }).notNull(),
-  label: varchar("label", { length: 50 }).notNull(), // Home, Office, etc.
+export const addresses = sqliteTable("addresses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  label: text("label").notNull(), // Home, Office, etc.
   address: text("address").notNull(),
-  city: varchar("city", { length: 100 }).notNull(),
-  state: varchar("state", { length: 100 }).notNull(),
-  country: varchar("country", { length: 100 }).default("Nigeria"),
-  postalCode: varchar("postalCode", { length: 20 }),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
-  isDefault: boolean("isDefault").default(false),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  country: text("country").default("Nigeria"),
+  postalCode: text("postalCode"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  isDefault: integer("isDefault", { mode: "boolean" }).default(false),
   accessInstructions: text("accessInstructions"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  createdAt: createdAt(),
 });
 
 // ── 8. BOOKINGS ─────────────────────────────────────────────────
-export const bookings = mysqlTable(
+export const bookings = sqliteTable(
   "bookings",
   {
-    id: serial("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     // References
-    customerId: bigint("customerId", { mode: "number", unsigned: true }).notNull(),
-    providerId: bigint("providerId", { mode: "number", unsigned: true }),
-    addressId: bigint("addressId", { mode: "number", unsigned: true }).notNull(),
+    customerId: integer("customerId").notNull(),
+    providerId: integer("providerId"),
+    businessId: integer("businessId"),
+    addressId: integer("addressId").notNull(),
     // Status
-    status: mysqlEnum("status", [
-      "draft",
-      "pending",
-      "confirmed",
-      "provider_assigned",
-      "in_progress",
-      "provider_arrived",
-      "service_started",
-      "service_completed",
-      "payment_pending",
-      "completed",
-      "cancelled",
-      "disputed",
-      "refunded",
-    ])
+    status: text("status", {
+      enum: [
+        "draft",
+        "pending",
+        "confirmed",
+        "provider_assigned",
+        "in_progress",
+        "provider_arrived",
+        "service_started",
+        "service_completed",
+        "payment_pending",
+        "completed",
+        "cancelled",
+        "disputed",
+        "refunded",
+      ],
+    })
       .default("draft")
       .notNull(),
     // Booking type
-    bookingType: mysqlEnum("bookingType", [
-      "instant",
-      "scheduled",
-      "emergency",
-      "recurring",
-    ])
+    bookingType: text("bookingType", {
+      enum: ["instant", "scheduled", "emergency", "recurring"],
+    })
       .default("instant")
       .notNull(),
-    recurringFrequency: mysqlEnum("recurringFrequency", [
-      "daily",
-      "weekly",
-      "bi_weekly",
-      "monthly",
-    ]),
-    recurringEndDate: timestamp("recurringEndDate"),
-    parentBookingId: bigint("parentBookingId", {
-      mode: "number",
-      unsigned: true,
+    recurringFrequency: text("recurringFrequency", {
+      enum: ["daily", "weekly", "bi_weekly", "monthly"],
     }),
+    recurringEndDate: integer("recurringEndDate", { mode: "timestamp" }),
+    parentBookingId: integer("parentBookingId"),
     // Scheduling
-    scheduledDate: timestamp("scheduledDate").notNull(),
-    preferredTimeStart: varchar("preferredTimeStart", { length: 10 }), // e.g., "09:00"
-    preferredTimeEnd: varchar("preferredTimeEnd", { length: 10 }), // e.g., "12:00"
-    actualStartTime: timestamp("actualStartTime"),
-    actualEndTime: timestamp("actualEndTime"),
+    scheduledDate: integer("scheduledDate", { mode: "timestamp" }).notNull(),
+    preferredTimeStart: text("preferredTimeStart"), // e.g., "09:00"
+    preferredTimeEnd: text("preferredTimeEnd"), // e.g., "12:00"
+    actualStartTime: integer("actualStartTime", { mode: "timestamp" }),
+    actualEndTime: integer("actualEndTime", { mode: "timestamp" }),
     // Property details
-    propertyType: mysqlEnum("propertyType", [
-      "apartment",
-      "house",
-      "office",
-      "commercial",
-      "industrial",
-      "vehicle",
-      "event_venue",
-      "other",
-    ]),
-    propertySize: varchar("propertySize", { length: 50 }), // e.g., "2_bedroom", "500_sqm"
-    numberOfRooms: int("numberOfRooms"),
-    numberOfBathrooms: int("numberOfBathrooms"),
+    propertyType: text("propertyType", {
+      enum: [
+        "apartment",
+        "house",
+        "office",
+        "commercial",
+        "industrial",
+        "vehicle",
+        "event_venue",
+        "other",
+      ],
+    }),
+    propertySize: text("propertySize"), // e.g., "2_bedroom", "500_sqm"
+    numberOfRooms: integer("numberOfRooms"),
+    numberOfBathrooms: integer("numberOfBathrooms"),
     // Instructions
     specialInstructions: text("specialInstructions"),
-    customerAttachments: json("customerAttachments"), // array of image URLs
+    customerAttachments: text("customerAttachments", { mode: "json" }),
     // Pricing
-    subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull(),
-    addonTotal: decimal("addonTotal", { precision: 12, scale: 2 }).default(
-      "0.00"
-    ),
-    platformFee: decimal("platformFee", { precision: 12, scale: 2 }).default(
-      "0.00"
-    ),
-    surgePrice: decimal("surgePrice", { precision: 12, scale: 2 }).default(
-      "0.00"
-    ),
-    discountAmount: decimal("discountAmount", { precision: 12, scale: 2 }).default(
-      "0.00"
-    ),
-    tipAmount: decimal("tipAmount", { precision: 12, scale: 2 }).default(
-      "0.00"
-    ),
-    totalAmount: decimal("totalAmount", { precision: 12, scale: 2 }).notNull(),
+    subtotal: text("subtotal").notNull(),
+    addonTotal: text("addonTotal").default("0.00"),
+    platformFee: text("platformFee").default("0.00"),
+    surgePrice: text("surgePrice").default("0.00"),
+    discountAmount: text("discountAmount").default("0.00"),
+    tipAmount: text("tipAmount").default("0.00"),
+    totalAmount: text("totalAmount").notNull(),
     // Payment
-    paymentStatus: mysqlEnum("paymentStatus", [
-      "pending",
-      "authorized",
-      "paid",
-      "failed",
-      "refunded",
-      "partially_refunded",
-    ])
+    paymentStatus: text("paymentStatus", {
+      enum: [
+        "pending",
+        "authorized",
+        "paid",
+        "failed",
+        "refunded",
+        "partially_refunded",
+      ],
+    })
       .default("pending")
       .notNull(),
-    paymentMethod: varchar("paymentMethod", { length: 50 }),
-    transactionReference: varchar("transactionReference", { length: 255 }),
-    paidAt: timestamp("paidAt"),
+    paymentMethod: text("paymentMethod"),
+    transactionReference: text("transactionReference"),
+    paidAt: integer("paidAt", { mode: "timestamp" }),
     // Provider earnings
-    providerEarnings: decimal("providerEarnings", { precision: 12, scale: 2 }),
-    commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }),
+    providerEarnings: text("providerEarnings"),
+    commissionRate: text("commissionRate"),
     // OTP confirmation
-    completionOtp: varchar("completionOtp", { length: 6 }),
-    otpVerified: boolean("otpVerified").default(false),
-    otpVerifiedAt: timestamp("otpVerifiedAt"),
+    completionOtp: text("completionOtp"),
+    otpVerified: integer("otpVerified", { mode: "boolean" }).default(false),
+    otpVerifiedAt: integer("otpVerifiedAt", { mode: "timestamp" }),
     // Cancellation
-    cancelledBy: mysqlEnum("cancelledBy", ["customer", "provider", "system"]),
+    cancelledBy: text("cancelledBy", {
+      enum: ["customer", "provider", "system"],
+    }),
     cancellationReason: text("cancellationReason"),
-    cancelledAt: timestamp("cancelledAt"),
+    cancelledAt: integer("cancelledAt", { mode: "timestamp" }),
     // Metadata
-    source: mysqlEnum("source", ["web", "ios", "android", "admin"]).default(
+    source: text("source", { enum: ["web", "ios", "android", "admin"] }).default(
       "web"
     ),
-    ipAddress: varchar("ipAddress", { length: 45 }),
+    ipAddress: text("ipAddress"),
     userAgent: text("userAgent"),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-    updatedAt: timestamp("updatedAt")
-      .defaultNow()
-      .notNull()
-      .$onUpdate(() => new Date()),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
   },
   (table) => [
     index("idx_booking_customer").on(table.customerId),
     index("idx_booking_provider").on(table.providerId),
+    index("idx_booking_business").on(table.businessId),
     index("idx_booking_status").on(table.status),
     index("idx_booking_date").on(table.scheduledDate),
     index("idx_booking_created").on(table.createdAt),
@@ -376,63 +431,62 @@ export const bookings = mysqlTable(
 );
 
 // ── 9. BOOKING ITEMS (individual services in a booking) ─────────
-export const bookingItems = mysqlTable("booking_items", {
-  id: serial("id").primaryKey(),
-  bookingId: bigint("bookingId", { mode: "number", unsigned: true }).notNull(),
-  serviceId: bigint("serviceId", { mode: "number", unsigned: true }).notNull(),
-  serviceName: varchar("serviceName", { length: 200 }).notNull(),
-  quantity: int("quantity").default(1),
-  unitPrice: decimal("unitPrice", { precision: 12, scale: 2 }).notNull(),
-  totalPrice: decimal("totalPrice", { precision: 12, scale: 2 }).notNull(),
+export const bookingItems = sqliteTable("booking_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bookingId: integer("bookingId").notNull(),
+  serviceId: integer("serviceId").notNull(),
+  serviceName: text("serviceName").notNull(),
+  quantity: integer("quantity").default(1),
+  unitPrice: text("unitPrice").notNull(),
+  totalPrice: text("totalPrice").notNull(),
   // Customization
-  propertySize: varchar("propertySize", { length: 50 }),
-  numberOfRooms: int("numberOfRooms"),
+  propertySize: text("propertySize"),
+  numberOfRooms: integer("numberOfRooms"),
   specialRequests: text("specialRequests"),
-  useEcoProducts: boolean("useEcoProducts").default(false),
-  addons: json("addons"), // array of {addonId, name, price}
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  useEcoProducts: integer("useEcoProducts", { mode: "boolean" }).default(false),
+  addons: text("addons", { mode: "json" }), // array of {addonId, name, price}
+  createdAt: createdAt(),
 });
 
 // ── 10. BOOKING STATUS HISTORY ──────────────────────────────────
-export const bookingStatusHistory = mysqlTable("booking_status_history", {
-  id: serial("id").primaryKey(),
-  bookingId: bigint("bookingId", { mode: "number", unsigned: true }).notNull(),
-  status: varchar("status", { length: 50 }).notNull(),
+export const bookingStatusHistory = sqliteTable("booking_status_history", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bookingId: integer("bookingId").notNull(),
+  status: text("status").notNull(),
   notes: text("notes"),
-  changedBy: bigint("changedBy", { mode: "number", unsigned: true }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  changedBy: integer("changedBy"),
+  createdAt: createdAt(),
 });
 
 // ── 11. REVIEWS ─────────────────────────────────────────────────
-export const reviews = mysqlTable(
+export const reviews = sqliteTable(
   "reviews",
   {
-    id: serial("id").primaryKey(),
-    bookingId: bigint("bookingId", { mode: "number", unsigned: true })
-      .notNull(),
-    customerId: bigint("customerId", { mode: "number", unsigned: true }).notNull(),
-    providerId: bigint("providerId", { mode: "number", unsigned: true }).notNull(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    bookingId: integer("bookingId").notNull(),
+    customerId: integer("customerId").notNull(),
+    providerId: integer("providerId").notNull(),
     // Ratings
-    overallRating: int("overallRating").notNull(), // 1-5
-    punctualityRating: int("punctualityRating"),
-    qualityRating: int("qualityRating"),
-    professionalismRating: int("professionalismRating"),
-    communicationRating: int("communicationRating"),
-    valueRating: int("valueRating"),
+    overallRating: integer("overallRating").notNull(), // 1-5
+    punctualityRating: integer("punctualityRating"),
+    qualityRating: integer("qualityRating"),
+    professionalismRating: integer("professionalismRating"),
+    communicationRating: integer("communicationRating"),
+    valueRating: integer("valueRating"),
     // Content
     reviewText: text("reviewText"),
-    photos: json("photos"), // array of image URLs
-    isVerified: boolean("isVerified").default(false),
+    photos: text("photos", { mode: "json" }), // array of image URLs
+    isVerified: integer("isVerified", { mode: "boolean" }).default(false),
     // Moderation
-    isFlagged: boolean("isFlagged").default(false),
+    isFlagged: integer("isFlagged", { mode: "boolean" }).default(false),
     flagReason: text("flagReason"),
     moderatorNotes: text("moderatorNotes"),
-    isVisible: boolean("isVisible").default(true),
+    isVisible: integer("isVisible", { mode: "boolean" }).default(true),
     // Response
     providerResponse: text("providerResponse"),
-    providerRespondedAt: timestamp("providerRespondedAt"),
-    helpfulCount: int("helpfulCount").default(0),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    providerRespondedAt: integer("providerRespondedAt", { mode: "timestamp" }),
+    helpfulCount: integer("helpfulCount").default(0),
+    createdAt: createdAt(),
   },
   (table) => [
     uniqueIndex("idx_review_booking").on(table.bookingId),
@@ -442,249 +496,248 @@ export const reviews = mysqlTable(
 );
 
 // ── 12. MESSAGES / CHAT ─────────────────────────────────────────
-export const messages = mysqlTable(
+export const messages = sqliteTable(
   "messages",
   {
-    id: serial("id").primaryKey(),
-    bookingId: bigint("bookingId", { mode: "number", unsigned: true }).notNull(),
-    senderId: bigint("senderId", { mode: "number", unsigned: true }).notNull(),
-    senderType: mysqlEnum("senderType", ["customer", "provider", "system", "admin"]).notNull(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    bookingId: integer("bookingId").notNull(),
+    senderId: integer("senderId").notNull(),
+    senderType: text("senderType", {
+      enum: ["customer", "provider", "system", "admin"],
+    }).notNull(),
     content: text("content").notNull(),
-    messageType: mysqlEnum("messageType", [
-      "text",
-      "image",
-      "voice",
-      "location",
-      "system",
-    ]).default("text"),
+    messageType: text("messageType", {
+      enum: ["text", "image", "voice", "location", "system"],
+    }).default("text"),
     attachmentUrl: text("attachmentUrl"),
-    isRead: boolean("isRead").default(false),
-    readAt: timestamp("readAt"),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    isRead: integer("isRead", { mode: "boolean" }).default(false),
+    readAt: integer("readAt", { mode: "timestamp" }),
+    createdAt: createdAt(),
   },
   (table) => [index("idx_message_booking").on(table.bookingId)]
 );
 
 // ── 13. NOTIFICATIONS ───────────────────────────────────────────
-export const notifications = mysqlTable(
+export const notifications = sqliteTable(
   "notifications",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true }).notNull(),
-    type: mysqlEnum("type", [
-      "booking_confirmed",
-      "booking_reminder",
-      "provider_assigned",
-      "provider_arriving",
-      "service_completed",
-      "payment_received",
-      "payment_failed",
-      "review_request",
-      "promo",
-      "system",
-      "chat",
-      "dispute_update",
-      "withdrawal_processed",
-    ]).notNull(),
-    title: varchar("title", { length: 255 }).notNull(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    type: text("type", {
+      enum: [
+        "booking_confirmed",
+        "booking_reminder",
+        "provider_assigned",
+        "provider_arriving",
+        "service_completed",
+        "payment_received",
+        "payment_failed",
+        "review_request",
+        "promo",
+        "system",
+        "chat",
+        "dispute_update",
+        "withdrawal_processed",
+      ],
+    }).notNull(),
+    title: text("title").notNull(),
     body: text("body").notNull(),
-    data: json("data"), // extra payload
+    data: text("data", { mode: "json" }), // extra payload
     image: text("image"),
-    actionUrl: varchar("actionUrl", { length: 500 }),
-    isRead: boolean("isRead").default(false),
-    readAt: timestamp("readAt"),
-    sentVia: mysqlEnum("sentVia", ["push", "sms", "email", "in_app"]).default(
-      "in_app"
-    ),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    actionUrl: text("actionUrl"),
+    isRead: integer("isRead", { mode: "boolean" }).default(false),
+    readAt: integer("readAt", { mode: "timestamp" }),
+    sentVia: text("sentVia", {
+      enum: ["push", "sms", "email", "in_app"],
+    }).default("in_app"),
+    createdAt: createdAt(),
   },
   (table) => [index("idx_notif_user").on(table.userId)]
 );
 
 // ── 14. COUPONS / PROMO CODES ───────────────────────────────────
-export const coupons = mysqlTable("coupons", {
-  id: serial("id").primaryKey(),
-  code: varchar("code", { length: 50 }).notNull().unique(),
+export const coupons = sqliteTable("coupons", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  code: text("code").notNull().unique(),
   description: text("description"),
-  discountType: mysqlEnum("discountType", ["percentage", "fixed_amount"]).notNull(),
-  discountValue: decimal("discountValue", { precision: 10, scale: 2 }).notNull(),
-  maxDiscount: decimal("maxDiscount", { precision: 12, scale: 2 }),
-  minOrderAmount: decimal("minOrderAmount", { precision: 12, scale: 2 }).default(
-    "0.00"
-  ),
+  discountType: text("discountType", {
+    enum: ["percentage", "fixed_amount"],
+  }).notNull(),
+  discountValue: text("discountValue").notNull(),
+  maxDiscount: text("maxDiscount"),
+  minOrderAmount: text("minOrderAmount").default("0.00"),
   // Limits
-  usageLimit: int("usageLimit"),
-  usageCount: int("usageCount").default(0),
-  perUserLimit: int("perUserLimit").default(1),
+  usageLimit: integer("usageLimit"),
+  usageCount: integer("usageCount").default(0),
+  perUserLimit: integer("perUserLimit").default(1),
   // Scope
-  applicableServices: json("applicableServices"), // null = all
-  applicableCategories: json("applicableCategories"), // null = all
-  userSpecific: boolean("userSpecific").default(false),
+  applicableServices: text("applicableServices", { mode: "json" }), // null = all
+  applicableCategories: text("applicableCategories", { mode: "json" }), // null = all
+  userSpecific: integer("userSpecific", { mode: "boolean" }).default(false),
   // Validity
-  startsAt: timestamp("startsAt").notNull(),
-  expiresAt: timestamp("expiresAt").notNull(),
-  isActive: boolean("isActive").default(true),
-  createdBy: bigint("createdBy", { mode: "number", unsigned: true }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  startsAt: integer("startsAt", { mode: "timestamp" }).notNull(),
+  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+  isActive: integer("isActive", { mode: "boolean" }).default(true),
+  createdBy: integer("createdBy"),
+  createdAt: createdAt(),
 });
 
 // ── 15. COUPON REDEMPTIONS ──────────────────────────────────────
-export const couponRedemptions = mysqlTable("coupon_redemptions", {
-  id: serial("id").primaryKey(),
-  couponId: bigint("couponId", { mode: "number", unsigned: true }).notNull(),
-  userId: bigint("userId", { mode: "number", unsigned: true }).notNull(),
-  bookingId: bigint("bookingId", { mode: "number", unsigned: true }),
-  discountAmount: decimal("discountAmount", { precision: 12, scale: 2 }).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+export const couponRedemptions = sqliteTable("coupon_redemptions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  couponId: integer("couponId").notNull(),
+  userId: integer("userId").notNull(),
+  bookingId: integer("bookingId"),
+  discountAmount: text("discountAmount").notNull(),
+  createdAt: createdAt(),
 });
 
 // ── 16. PROVIDER AVAILABILITY SCHEDULE ──────────────────────────
-export const providerSchedules = mysqlTable("provider_schedules", {
-  id: serial("id").primaryKey(),
-  providerId: bigint("providerId", { mode: "number", unsigned: true }).notNull(),
-  dayOfWeek: int("dayOfWeek").notNull(), // 0=Sunday, 6=Saturday
-  startTime: varchar("startTime", { length: 10 }).notNull(), // "08:00"
-  endTime: varchar("endTime", { length: 10 }).notNull(), // "18:00"
-  isAvailable: boolean("isAvailable").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+export const providerSchedules = sqliteTable("provider_schedules", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  providerId: integer("providerId").notNull(),
+  dayOfWeek: integer("dayOfWeek").notNull(), // 0=Sunday, 6=Saturday
+  startTime: text("startTime").notNull(), // "08:00"
+  endTime: text("endTime").notNull(), // "18:00"
+  isAvailable: integer("isAvailable", { mode: "boolean" }).default(true),
+  createdAt: createdAt(),
 });
 
 // ── 17. PROVIDER BLOCKED DATES ──────────────────────────────────
-export const providerBlockedDates = mysqlTable("provider_blocked_dates", {
-  id: serial("id").primaryKey(),
-  providerId: bigint("providerId", { mode: "number", unsigned: true }).notNull(),
-  date: timestamp("date").notNull(),
-  reason: varchar("reason", { length: 255 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+export const providerBlockedDates = sqliteTable("provider_blocked_dates", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  providerId: integer("providerId").notNull(),
+  date: integer("date", { mode: "timestamp" }).notNull(),
+  reason: text("reason"),
+  createdAt: createdAt(),
 });
 
 // ── 18. EARNINGS / WITHDRAWALS ──────────────────────────────────
-export const withdrawals = mysqlTable(
+export const withdrawals = sqliteTable(
   "withdrawals",
   {
-    id: serial("id").primaryKey(),
-    providerId: bigint("providerId", { mode: "number", unsigned: true }).notNull(),
-    amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
-    status: mysqlEnum("status", ["pending", "processing", "completed", "rejected"])
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    providerId: integer("providerId"),
+    businessId: integer("businessId"),
+    amount: text("amount").notNull(),
+    status: text("status", {
+      enum: ["pending", "processing", "completed", "rejected"],
+    })
       .default("pending")
       .notNull(),
-    bankName: varchar("bankName", { length: 255 }),
-    accountNumber: varchar("accountNumber", { length: 20 }),
-    accountName: varchar("accountName", { length: 255 }),
-    processedAt: timestamp("processedAt"),
-    processedBy: bigint("processedBy", { mode: "number", unsigned: true }),
+    bankName: text("bankName"),
+    accountNumber: text("accountNumber"),
+    accountName: text("accountName"),
+    processedAt: integer("processedAt", { mode: "timestamp" }),
+    processedBy: integer("processedBy"),
     rejectionReason: text("rejectionReason"),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    createdAt: createdAt(),
   },
   (table) => [index("idx_withdrawal_provider").on(table.providerId)]
 );
 
 // ── 19. DISPUTES ────────────────────────────────────────────────
-export const disputes = mysqlTable("disputes", {
-  id: serial("id").primaryKey(),
-  bookingId: bigint("bookingId", { mode: "number", unsigned: true }).notNull(),
-  customerId: bigint("customerId", { mode: "number", unsigned: true }).notNull(),
-  providerId: bigint("providerId", { mode: "number", unsigned: true }).notNull(),
+export const disputes = sqliteTable("disputes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bookingId: integer("bookingId").notNull(),
+  customerId: integer("customerId").notNull(),
+  providerId: integer("providerId").notNull(),
   // Dispute details
-  reason: mysqlEnum("reason", [
-    "no_show",
-    "incomplete_service",
-    "damaged_property",
-    "overcharged",
-    "rude_behavior",
-    "quality_issue",
-    "safety_concern",
-    "other",
-  ]).notNull(),
+  reason: text("reason", {
+    enum: [
+      "no_show",
+      "incomplete_service",
+      "damaged_property",
+      "overcharged",
+      "rude_behavior",
+      "quality_issue",
+      "safety_concern",
+      "other",
+    ],
+  }).notNull(),
   description: text("description").notNull(),
-  evidencePhotos: json("evidencePhotos"),
+  evidencePhotos: text("evidencePhotos", { mode: "json" }),
   // Resolution
-  status: mysqlEnum("status", [
-    "open",
-    "under_review",
-    "resolved_customer",
-    "resolved_provider",
-    "resolved_split",
-    "rejected",
-  ])
+  status: text("status", {
+    enum: [
+      "open",
+      "under_review",
+      "resolved_customer",
+      "resolved_provider",
+      "resolved_split",
+      "rejected",
+    ],
+  })
     .default("open")
     .notNull(),
   resolution: text("resolution"),
-  refundAmount: decimal("refundAmount", { precision: 12, scale: 2 }),
-  resolvedBy: bigint("resolvedBy", { mode: "number", unsigned: true }),
-  resolvedAt: timestamp("resolvedAt"),
+  refundAmount: text("refundAmount"),
+  resolvedBy: integer("resolvedBy"),
+  resolvedAt: integer("resolvedAt", { mode: "timestamp" }),
   // Communication
-  messages: json("messages"), // thread of messages
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt")
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
+  messages: text("messages", { mode: "json" }), // thread of messages
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
 });
 
 // ── 20. ADMIN ACTIVITY LOGS ─────────────────────────────────────
-export const activityLogs = mysqlTable("activity_logs", {
-  id: serial("id").primaryKey(),
-  adminId: bigint("adminId", { mode: "number", unsigned: true }).notNull(),
-  action: varchar("action", { length: 100 }).notNull(), // e.g., "verify_provider", "refund_booking"
-  entityType: varchar("entityType", { length: 50 }).notNull(), // e.g., "provider", "booking"
-  entityId: bigint("entityId", { mode: "number", unsigned: true }),
-  details: json("details"),
-  ipAddress: varchar("ipAddress", { length: 45 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+export const activityLogs = sqliteTable("activity_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  adminId: integer("adminId").notNull(),
+  action: text("action").notNull(), // e.g., "verify_provider", "refund_booking"
+  entityType: text("entityType").notNull(), // e.g., "provider", "booking"
+  entityId: integer("entityId"),
+  details: text("details", { mode: "json" }),
+  ipAddress: text("ipAddress"),
+  createdAt: createdAt(),
 });
 
 // ── 21. PLATFORM CONFIG / SETTINGS ──────────────────────────────
-export const platformSettings = mysqlTable("platform_settings", {
-  id: serial("id").primaryKey(),
-  key: varchar("key", { length: 100 }).notNull().unique(),
+export const platformSettings = sqliteTable("platform_settings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  key: text("key").notNull().unique(),
   value: text("value").notNull(),
   description: text("description"),
-  updatedBy: bigint("updatedBy", { mode: "number", unsigned: true }),
-  updatedAt: timestamp("updatedAt")
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
+  updatedBy: integer("updatedBy"),
+  updatedAt: updatedAt(),
 });
 
 // ── 22. REFERRALS ───────────────────────────────────────────────
-export const referrals = mysqlTable("referrals", {
-  id: serial("id").primaryKey(),
-  referrerId: bigint("referrerId", { mode: "number", unsigned: true }).notNull(),
-  referredId: bigint("referredId", { mode: "number", unsigned: true }).notNull(),
-  referralCode: varchar("referralCode", { length: 20 }).notNull(),
-  status: mysqlEnum("status", ["pending", "completed", "rewarded"])
+export const referrals = sqliteTable("referrals", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  referrerId: integer("referrerId").notNull(),
+  referredId: integer("referredId").notNull(),
+  referralCode: text("referralCode").notNull(),
+  status: text("status", { enum: ["pending", "completed", "rewarded"] })
     .default("pending")
     .notNull(),
-  rewardAmount: decimal("rewardAmount", { precision: 12, scale: 2 }).default(
-    "0.00"
-  ),
-  completedAt: timestamp("completedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  rewardAmount: text("rewardAmount").default("0.00"),
+  completedAt: integer("completedAt", { mode: "timestamp" }),
+  createdAt: createdAt(),
 });
 
 // ── 23. PROVIDER PORTFOLIO / BEFORE-AFTER PHOTOS ────────────────
-export const providerPortfolio = mysqlTable("provider_portfolio", {
-  id: serial("id").primaryKey(),
-  providerId: bigint("providerId", { mode: "number", unsigned: true }).notNull(),
-  bookingId: bigint("bookingId", { mode: "number", unsigned: true }),
-  title: varchar("title", { length: 255 }),
+export const providerPortfolio = sqliteTable("provider_portfolio", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  providerId: integer("providerId").notNull(),
+  bookingId: integer("bookingId"),
+  title: text("title"),
   description: text("description"),
   beforeImageUrl: text("beforeImageUrl"),
   afterImageUrl: text("afterImageUrl"),
-  serviceId: bigint("serviceId", { mode: "number", unsigned: true }),
-  isPublic: boolean("isPublic").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  serviceId: integer("serviceId"),
+  isPublic: integer("isPublic", { mode: "boolean" }).default(true),
+  createdAt: createdAt(),
 });
 
 // ── 24. FAVORITE PROVIDERS ──────────────────────────────────────
-export const favoriteProviders = mysqlTable(
+export const favoriteProviders = sqliteTable(
   "favorite_providers",
   {
-    id: serial("id").primaryKey(),
-    customerId: bigint("customerId", { mode: "number", unsigned: true }).notNull(),
-    providerId: bigint("providerId", { mode: "number", unsigned: true }).notNull(),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    customerId: integer("customerId").notNull(),
+    providerId: integer("providerId").notNull(),
+    createdAt: createdAt(),
   },
   (table) => [
     uniqueIndex("idx_fav_customer_provider").on(

@@ -12,12 +12,24 @@ export default defineConfig([
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
-      reactHooks.configs.flat.recommended,
+      reactHooks.configs["recommended-latest"],
       reactRefresh.configs.vite,
     ],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+    rules: {
+      // shadcn/ui files intentionally export variants/hooks beside components;
+      // this is an HMR optimisation hint, not a correctness rule.
+      'react-refresh/only-export-components': 'off',
+      // Many `as any` casts are required for Drizzle enum filtering / zod casts.
+      // Keep visible as warnings rather than hard errors.
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
     },
   },
 ])

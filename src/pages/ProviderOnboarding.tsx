@@ -54,15 +54,15 @@ export default function ProviderOnboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-cream py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-600/20">
+          <div className="w-16 h-16 bg-brand rounded-lg flex items-center justify-center mx-auto mb-4 shadow-hard ">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Become a CleanPro Provider
+            Become a WeClean Provider
           </h1>
           <p className="text-slate-500 mt-2">
             Join Nigeria's top cleaning professionals. Earn on your schedule.
@@ -76,7 +76,7 @@ export default function ProviderOnboarding() {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                   s.id <= step
-                    ? "bg-blue-600 text-white"
+                    ? "bg-brand text-white"
                     : "bg-slate-200 text-slate-500"
                 }`}
               >
@@ -89,7 +89,7 @@ export default function ProviderOnboarding() {
               {i < steps.length - 1 && (
                 <div
                   className={`w-8 h-0.5 ${
-                    s.id < step ? "bg-blue-600" : "bg-slate-200"
+                    s.id < step ? "bg-brand" : "bg-slate-200"
                   }`}
                 />
               )}
@@ -97,7 +97,7 @@ export default function ProviderOnboarding() {
           ))}
         </div>
 
-        <Card className="border-0 shadow-xl">
+        <Card className="border-ink/12 shadow-hard">
           <CardContent className="p-8">
             {/* Step 1: Personal Info */}
             {step === 1 && (
@@ -126,7 +126,7 @@ export default function ProviderOnboarding() {
                       />
                       <Label
                         htmlFor="individual"
-                        className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50"
+                        className="flex items-center gap-2 px-4 py-3 rounded-md border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-brand peer-data-[state=checked]:bg-brand-50"
                       >
                         <User className="w-4 h-4" />
                         Individual
@@ -140,7 +140,7 @@ export default function ProviderOnboarding() {
                       />
                       <Label
                         htmlFor="company"
-                        className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50"
+                        className="flex items-center gap-2 px-4 py-3 rounded-md border-2 border-slate-200 cursor-pointer peer-data-[state=checked]:border-brand peer-data-[state=checked]:bg-brand-50"
                       >
                         <Briefcase className="w-4 h-4" />
                         Company
@@ -217,9 +217,9 @@ export default function ProviderOnboarding() {
                     <button
                       key={service}
                       onClick={() => toggleService(service)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      className={`p-4 rounded-md border-2 text-left transition-all ${
                         selectedServices.includes(service)
-                          ? "border-blue-600 bg-blue-50 text-blue-700"
+                          ? "border-brand bg-brand-50 text-brand-700"
                           : "border-slate-200 hover:border-slate-300 text-slate-600"
                       }`}
                     >
@@ -263,7 +263,7 @@ export default function ProviderOnboarding() {
                       (type) => (
                         <button
                           key={type}
-                          className="p-3 rounded-xl border-2 border-slate-200 hover:border-blue-300 text-sm font-medium text-slate-600 transition-colors"
+                          className="p-3 rounded-md border-2 border-slate-200 hover:border-brand text-sm font-medium text-slate-600 transition-colors"
                         >
                           {type}
                         </button>
@@ -279,7 +279,7 @@ export default function ProviderOnboarding() {
 
                 <div>
                   <Label>Upload ID Document</Label>
-                  <div className="mt-2 border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors cursor-pointer">
+                  <div className="mt-2 border-2 border-dashed border-slate-300 rounded-md p-8 text-center hover:border-brand transition-colors cursor-pointer">
                     <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                     <p className="text-sm text-slate-600">
                       Click to upload or drag and drop
@@ -327,14 +327,14 @@ export default function ProviderOnboarding() {
                   <Input placeholder="As it appears on your bank account" className="mt-1.5" />
                 </div>
 
-                <div className="bg-blue-50 rounded-xl p-4">
+                <div className="bg-brand-50 rounded-md p-4">
                   <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <Shield className="w-5 h-5 text-brand mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-blue-900">
+                      <p className="text-sm font-medium text-brand-900">
                         Secure Payouts
                       </p>
-                      <p className="text-xs text-blue-700 mt-1">
+                      <p className="text-xs text-brand-700 mt-1">
                         Your bank details are encrypted and secure. Payouts are
                         processed every Monday.
                       </p>
@@ -347,8 +347,8 @@ export default function ProviderOnboarding() {
             {/* Step 5: Review */}
             {step === 5 && (
               <div className="space-y-6 text-center">
-                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-10 h-10 text-blue-600" />
+                <div className="w-20 h-20 bg-brand-100 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-10 h-10 text-brand" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">
@@ -360,7 +360,7 @@ export default function ProviderOnboarding() {
                   </p>
                 </div>
 
-                <div className="bg-slate-50 rounded-xl p-6 text-left max-w-md mx-auto">
+                <div className="bg-cream rounded-md p-6 text-left max-w-md mx-auto">
                   <h3 className="font-semibold text-slate-900 mb-3">
                     What's Next?
                   </h3>
@@ -401,7 +401,7 @@ export default function ProviderOnboarding() {
 
               {step < 5 ? (
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-brand hover:bg-brand-700"
                   onClick={() => setStep(step + 1)}
                 >
                   {step === 4 ? "Submit Application" : "Continue"}
@@ -409,7 +409,7 @@ export default function ProviderOnboarding() {
                 </Button>
               ) : (
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-brand hover:bg-brand-700"
                   onClick={() => navigate("/")}
                 >
                   Go to Home

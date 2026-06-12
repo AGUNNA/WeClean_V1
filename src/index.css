@@ -4,64 +4,65 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.625rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Editorial / brutalist-lite: warm cream paper, ink text, one green accent */
+    --background: 44 38% 95%;
+    --foreground: 33 24% 7%;
+    --card: 44 43% 97%;
+    --card-foreground: 33 24% 7%;
+    --popover: 44 43% 97%;
+    --popover-foreground: 33 24% 7%;
+    --primary: 146 71% 33%;
+    --primary-foreground: 44 43% 97%;
+    --secondary: 40 22% 90%;
+    --secondary-foreground: 33 24% 9%;
+    --muted: 40 20% 91%;
+    --muted-foreground: 33 8% 38%;
+    --accent: 146 45% 90%;
+    --accent-foreground: 146 71% 18%;
+    --destructive: 0 70% 47%;
+    --destructive-foreground: 44 43% 97%;
+    --border: 36 20% 82%;
+    --input: 36 20% 80%;
+    --ring: 146 71% 33%;
+    --radius: 0.3rem;
+    --sidebar-background: 33 24% 7%;
+    --sidebar-foreground: 44 25% 86%;
+    --sidebar-primary: 146 71% 36%;
+    --sidebar-primary-foreground: 44 43% 97%;
+    --sidebar-accent: 33 15% 14%;
+    --sidebar-accent-foreground: 44 25% 90%;
+    --sidebar-border: 33 12% 18%;
+    --sidebar-ring: 146 71% 36%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 33 24% 7%;
+    --foreground: 44 30% 92%;
+    --card: 33 20% 10%;
+    --card-foreground: 44 30% 92%;
+    --popover: 33 20% 10%;
+    --popover-foreground: 44 30% 92%;
+    --primary: 146 64% 45%;
+    --primary-foreground: 33 24% 7%;
+    --secondary: 33 12% 16%;
+    --secondary-foreground: 44 30% 92%;
+    --muted: 33 12% 16%;
+    --muted-foreground: 40 10% 62%;
+    --accent: 33 12% 16%;
+    --accent-foreground: 44 30% 92%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 44 30% 92%;
+    --border: 33 12% 18%;
+    --input: 33 12% 18%;
+    --ring: 146 64% 45%;
+    --sidebar-background: 33 24% 6%;
+    --sidebar-foreground: 44 25% 86%;
+    --sidebar-primary: 146 64% 45%;
+    --sidebar-primary-foreground: 33 24% 7%;
+    --sidebar-accent: 33 12% 14%;
+    --sidebar-accent-foreground: 44 25% 90%;
+    --sidebar-border: 33 12% 16%;
+    --sidebar-ring: 146 64% 45%;
   }
 }
 
@@ -71,5 +72,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .font-display {
+    font-family: "Space Grotesk", Inter, ui-sans-serif, sans-serif;
+    letter-spacing: -0.02em;
+  }
+  ::selection {
+    background: #1b9e5b;
+    color: #f7f4ed;
   }
 }

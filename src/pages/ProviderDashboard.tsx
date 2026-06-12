@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +12,6 @@ import {
   TrendingUp,
   Calendar,
   MapPin,
-  ChevronRight,
   Wallet,
   Award,
   CheckCircle2,
@@ -70,7 +68,6 @@ const earningsData = [
 ];
 
 export default function ProviderDashboard() {
-  const navigate = useNavigate();
   const [isAvailable, setIsAvailable] = useState(true);
   const [activeTab, setActiveTab] = useState("jobs");
 
@@ -85,7 +82,7 @@ export default function ProviderDashboard() {
       label: "Jobs Completed",
       value: "48",
       icon: ClipboardList,
-      color: "bg-blue-50 text-blue-600",
+      color: "bg-brand-50 text-brand",
     },
     {
       label: "Rating",
@@ -102,12 +99,12 @@ export default function ProviderDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-cream py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center">
+            <div className="w-14 h-14 bg-brand rounded-lg flex items-center justify-center">
               <Briefcase className="w-7 h-7 text-white" />
             </div>
             <div>
@@ -127,7 +124,7 @@ export default function ProviderDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 shadow-sm">
+            <div className="flex items-center gap-2 bg-white rounded-md px-4 py-2 ">
               <span className="text-sm text-slate-600">Available</span>
               <Switch checked={isAvailable} onCheckedChange={setIsAvailable} />
             </div>
@@ -140,11 +137,11 @@ export default function ProviderDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map((stat) => (
-            <Card key={stat.label} className="border-0 shadow-md">
+            <Card key={stat.label} className="border-ink/12 shadow-hard-sm">
               <CardContent className="p-5">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color}`}
+                    className={`w-10 h-10 rounded-md flex items-center justify-center ${stat.color}`}
                   >
                     <stat.icon className="w-5 h-5" />
                   </div>
@@ -174,7 +171,7 @@ export default function ProviderDashboard() {
                 {mockJobs.map((job) => (
                   <Card
                     key={job.id}
-                    className="border-0 shadow-sm hover:shadow-md transition-shadow"
+                    className="border-ink/12  hover:shadow-hard-sm transition-shadow"
                   >
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between">
@@ -187,7 +184,7 @@ export default function ProviderDashboard() {
                               variant="secondary"
                               className={
                                 job.status === "upcoming"
-                                  ? "bg-blue-100 text-blue-700"
+                                  ? "bg-brand-100 text-brand-700"
                                   : "bg-green-100 text-green-700"
                               }
                             >
@@ -219,7 +216,7 @@ export default function ProviderDashboard() {
                                 <XCircle className="w-3 h-3 mr-1" />
                                 Decline
                               </Button>
-                              <Button size="sm" className="h-8 bg-blue-600">
+                              <Button size="sm" className="h-8 bg-brand">
                                 <CheckCircle2 className="w-3 h-3 mr-1" />
                                 Accept
                               </Button>
@@ -235,7 +232,7 @@ export default function ProviderDashboard() {
               <TabsContent value="earnings" className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   {earningsData.map((item) => (
-                    <Card key={item.label} className="border-0 shadow-sm">
+                    <Card key={item.label} className="border-ink/12 ">
                       <CardContent className="p-4">
                         <p className="text-xs text-slate-500 mb-1">
                           {item.label}
@@ -254,7 +251,7 @@ export default function ProviderDashboard() {
                   ))}
                 </div>
 
-                <Card className="border-0 shadow-sm">
+                <Card className="border-ink/12 ">
                   <CardHeader>
                     <CardTitle className="text-base">Recent Transactions</CardTitle>
                   </CardHeader>
@@ -267,7 +264,7 @@ export default function ProviderDashboard() {
                     ].map((tx, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
+                        className="flex items-center justify-between py-2 border-b border-slate-100 last:border-ink/12"
                       >
                         <div>
                           <p className="text-sm font-medium text-slate-900">
@@ -289,14 +286,14 @@ export default function ProviderDashboard() {
                   </CardContent>
                 </Card>
 
-                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                <Button className="w-full bg-brand hover:bg-brand-700">
                   <Wallet className="w-4 h-4 mr-2" />
                   Request Withdrawal
                 </Button>
               </TabsContent>
 
               <TabsContent value="schedule">
-                <Card className="border-0 shadow-sm">
+                <Card className="border-ink/12 ">
                   <CardHeader>
                     <CardTitle className="text-base">This Week</CardTitle>
                   </CardHeader>
@@ -306,7 +303,7 @@ export default function ProviderDashboard() {
                         (day, i) => (
                           <div
                             key={day}
-                            className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0"
+                            className="flex items-center justify-between py-3 border-b border-slate-100 last:border-ink/12"
                           >
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-sm font-semibold text-slate-600">
@@ -322,7 +319,7 @@ export default function ProviderDashboard() {
                               </div>
                             </div>
                             {i < 2 && (
-                              <Badge className="bg-blue-100 text-blue-700">
+                              <Badge className="bg-brand-100 text-brand-700">
                                 Working
                               </Badge>
                             )}
@@ -339,14 +336,14 @@ export default function ProviderDashboard() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Profile Completion */}
-            <Card className="border-0 shadow-md">
+            <Card className="border-ink/12 shadow-hard-sm">
               <CardHeader>
                 <CardTitle className="text-base">Profile Completion</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="w-full bg-slate-100 rounded-full h-3 mb-3">
                   <div
-                    className="bg-blue-600 h-3 rounded-full transition-all"
+                    className="bg-brand h-3 rounded-full transition-all"
                     style={{ width: "85%" }}
                   />
                 </div>
@@ -383,14 +380,14 @@ export default function ProviderDashboard() {
             </Card>
 
             {/* Performance */}
-            <Card className="border-0 shadow-md">
+            <Card className="border-ink/12 shadow-hard-sm">
               <CardHeader>
                 <CardTitle className="text-base">Performance</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {[
                   { label: "Completion Rate", value: "96%", color: "bg-green-500" },
-                  { label: "On-Time Rate", value: "98%", color: "bg-blue-500" },
+                  { label: "On-Time Rate", value: "98%", color: "bg-brand-500" },
                   { label: "Customer Satisfaction", value: "4.9/5", color: "bg-amber-500" },
                 ].map((metric) => (
                   <div key={metric.label}>
