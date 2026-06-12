@@ -52,11 +52,11 @@ export default function ServiceDetail() {
   const service = servicesMap[slug || ""] || servicesMap["house-cleaning"];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-cream py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
           onClick={() => navigate("/services")}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 mb-6"
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-brand mb-6"
         >
           <ChevronLeft className="w-4 h-4" />
           Back to Services
@@ -66,13 +66,13 @@ export default function ServiceDetail() {
           {/* Main */}
           <div className="lg:col-span-2 space-y-6">
             {/* Hero Image */}
-            <div className="relative rounded-2xl overflow-hidden aspect-video">
+            <div className="relative rounded-lg overflow-hidden aspect-video">
               <img
                 src={service.image}
                 alt={service.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-slate-900/20" />
+              <div className="absolute inset-0 bg-ink/20" />
             </div>
 
             {/* Title */}
@@ -81,7 +81,7 @@ export default function ServiceDetail() {
                 <h1 className="text-3xl font-bold text-slate-900">
                   {service.title}
                 </h1>
-                <Badge className="bg-blue-100 text-blue-700">Popular</Badge>
+                <Badge className="bg-brand-100 text-brand-700">Popular</Badge>
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
                 <span className="flex items-center gap-1">
@@ -100,7 +100,7 @@ export default function ServiceDetail() {
             </div>
 
             {/* Description */}
-            <Card className="border-0 shadow-md">
+            <Card className="border-ink/12 shadow-hard-sm">
               <CardContent className="p-6">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">
                   About This Service
@@ -112,7 +112,7 @@ export default function ServiceDetail() {
             </Card>
 
             {/* What's Included */}
-            <Card className="border-0 shadow-md">
+            <Card className="border-ink/12 shadow-hard-sm">
               <CardContent className="p-6">
                 <h2 className="text-lg font-semibold text-slate-900 mb-4">
                   What's Included
@@ -129,7 +129,7 @@ export default function ServiceDetail() {
             </Card>
 
             {/* Add-ons */}
-            <Card className="border-0 shadow-md">
+            <Card className="border-ink/12 shadow-hard-sm">
               <CardContent className="p-6">
                 <h2 className="text-lg font-semibold text-slate-900 mb-4">
                   Available Add-ons
@@ -138,12 +138,12 @@ export default function ServiceDetail() {
                   {service.addons.map((addon: any) => (
                     <div
                       key={addon.name}
-                      className="flex items-center justify-between p-3 bg-slate-50 rounded-xl"
+                      className="flex items-center justify-between p-3 bg-cream rounded-md"
                     >
                       <span className="text-sm text-slate-700">
                         {addon.name}
                       </span>
-                      <span className="text-sm font-semibold text-blue-600">
+                      <span className="text-sm font-semibold text-brand">
                         +N{addon.price}
                       </span>
                     </div>
@@ -155,7 +155,7 @@ export default function ServiceDetail() {
 
           {/* Sidebar */}
           <div>
-            <Card className="border-0 shadow-xl sticky top-24">
+            <Card className="border-ink/12 shadow-hard sticky top-24">
               <CardContent className="p-6 space-y-6">
                 <div>
                   <p className="text-sm text-slate-500 mb-1">Starting from</p>
@@ -171,7 +171,7 @@ export default function ServiceDetail() {
 
                 <div className="space-y-3">
                   <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-base"
+                    className="w-full bg-brand hover:bg-brand-700 text-white h-12 text-base"
                     onClick={() => navigate(`/book/1`)}
                   >
                     Book Now
@@ -202,9 +202,9 @@ export default function ServiceDetail() {
                   </Button>
                 </div>
 
-                <div className="bg-blue-50 rounded-xl p-4 space-y-2">
+                <div className="bg-brand-50 rounded-md p-4 space-y-2">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-blue-600" />
+                    <Shield className="w-4 h-4 text-brand" />
                     <span className="text-sm font-medium text-slate-900">
                       Satisfaction Guaranteed
                     </span>

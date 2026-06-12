@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { createRouter, publicQuery, authedQuery } from "../middleware";
 import { getDb } from "../queries/connection";
 import {
@@ -43,12 +43,6 @@ export const serviceRouter = createRouter({
     )
     .query(async ({ input }) => {
       const db = getDb();
-      let query = db
-        .select()
-        .from(services)
-        .where(eq(services.isActive, true))
-        .orderBy(asc(services.name));
-
       const conditions = [eq(services.isActive, true)];
       if (input?.categoryId) {
         conditions.push(eq(services.categoryId, input.categoryId));
@@ -122,7 +116,7 @@ export const serviceRouter = createRouter({
     .mutation(async ({ input }) => {
       const db = getDb();
       const result = await db.insert(serviceCategories).values(input);
-      return { success: true, id: Number((result as any).insertId) };
+      return { success: true, id: Number((result as any).lastInsertRowid) };
     }),
 
   // ── Admin: Create Service ───────────────────────────────────────
@@ -151,7 +145,7 @@ export const serviceRouter = createRouter({
     .mutation(async ({ input }) => {
       const db = getDb();
       const result = await db.insert(services).values(input);
-      return { success: true, id: Number((result as any).insertId) };
+      return { success: true, id: Number((result as any).lastInsertRowid) };
     }),
 
   // ── Admin: Create Addon ─────────────────────────────────────────
@@ -168,6 +162,6 @@ export const serviceRouter = createRouter({
     .mutation(async ({ input }) => {
       const db = getDb();
       const result = await db.insert(serviceAddons).values(input);
-      return { success: true, id: Number((result as any).insertId) };
+      return { success: true, id: Number((result as any).lastInsertRowid) };
     }),
 });

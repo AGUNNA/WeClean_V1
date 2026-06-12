@@ -21,25 +21,35 @@ import {
   LayoutDashboard,
   Briefcase,
   Shield,
+  Building2,
   ChevronDown,
-  Sparkles,
   Home,
   ClipboardList,
+  Info,
+  HelpCircle,
+  Mail,
   Bell,
 } from "lucide-react";
 import { useState } from "react";
 
 export default function Navbar() {
-  const { user, isAuthenticated, isAdmin, isProvider, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isBusiness, isProvider, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
+    { label: "Home", href: "/", icon: Home },
     { label: "Services", href: "/services", icon: ClipboardList },
+    { label: "About", href: "/about", icon: Info },
+    { label: "FAQs", href: "/faq", icon: HelpCircle },
+    { label: "Contact", href: "/contact", icon: Mail },
+    ...(isBusiness
+      ? [{ label: "Business Hub", href: "/business", icon: Building2 }]
+      : []),
     ...(isProvider
       ? [{ label: "Provider Dashboard", href: "/provider", icon: Briefcase }]
       : []),
-    ...(isAuthenticated
+    ...(isAuthenticated && !isBusiness
       ? [{ label: "My Bookings", href: "/dashboard", icon: LayoutDashboard }]
       : []),
     ...(isAdmin
@@ -48,22 +58,14 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-cream/85 backdrop-blur-md border-b border-ink/15">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20 group-hover:shadow-blue-600/30 transition-all">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
-                CleanPro
-              </span>
-              <span className="text-[10px] text-slate-500 leading-none font-medium uppercase tracking-wider">
-                Nigeria
-              </span>
-            </div>
+          <Link to="/" className="flex items-center group">
+            <span className="font-display text-2xl font-bold text-ink leading-none tracking-tight">
+              We<span className="text-brand">Clean</span>
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -72,7 +74,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 to={link.href}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-ink/70 hover:text-ink hover:bg-ink/5 rounded-sm transition-colors"
               >
                 <link.icon className="w-4 h-4" />
                 {link.label}
@@ -84,15 +86,15 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <>
-                <button className="relative p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                <button className="relative p-2 text-slate-500 hover:text-ink hover:bg-ink/5 rounded-lg transition-colors">
                   <Bell className="w-5 h-5" />
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
                 </button>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full hover:bg-ink/5 transition-colors">
+                      <div className="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center">
                         {user?.avatar ? (
                           <img
                             src={user.avatar}
@@ -100,10 +102,10 @@ export default function Navbar() {
                             className="w-8 h-8 rounded-full object-cover"
                           />
                         ) : (
-                          <User className="w-4 h-4 text-blue-600" />
+                          <User className="w-4 h-4 text-brand" />
                         )}
                       </div>
-                      <span className="hidden sm:block text-sm font-medium text-slate-700 max-w-[100px] truncate">
+                      <span className="hidden sm:block text-sm font-medium text-ink/80 max-w-[100px] truncate">
                         {user?.name || "User"}
                       </span>
                       <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -121,6 +123,12 @@ export default function Navbar() {
                       <LayoutDashboard className="w-4 h-4 mr-2" />
                       Dashboard
                     </DropdownMenuItem>
+                    {isBusiness && (
+                      <DropdownMenuItem onClick={() => navigate("/business")}>
+                        <Building2 className="w-4 h-4 mr-2" />
+                        Business Hub
+                      </DropdownMenuItem>
+                    )}
                     {isProvider && (
                       <DropdownMenuItem onClick={() => navigate("/provider")}>
                         <Briefcase className="w-4 h-4 mr-2" />
@@ -154,7 +162,7 @@ export default function Navbar() {
                 <Button
                   size="sm"
                   onClick={() => navigate("/services")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20"
+                  className="bg-brand hover:bg-brand-700 text-white"
                 >
                   Book Cleaning
                 </Button>
@@ -164,32 +172,23 @@ export default function Navbar() {
             {/* Mobile Menu */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
-                <button className="md:hidden p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                <button className="md:hidden p-2 text-slate-500 hover:text-ink hover:bg-ink/5 rounded-lg transition-colors">
                   <Menu className="w-6 h-6" />
                 </button>
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
-                <SheetTitle className="flex items-center gap-2 mb-6">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="font-bold text-slate-900">CleanPro Nigeria</span>
+                <SheetTitle className="mb-6">
+                  <span className="font-display text-xl font-bold text-ink">
+                    We<span className="text-brand">Clean</span>
+                  </span>
                 </SheetTitle>
                 <nav className="flex flex-col gap-1">
-                  <Link
-                    to="/"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                  >
-                    <Home className="w-5 h-5" />
-                    Home
-                  </Link>
                   {navLinks.map((link) => (
                     <Link
                       key={link.href}
                       to={link.href}
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                      className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:text-ink hover:bg-ink/5 rounded-lg"
                     >
                       <link.icon className="w-5 h-5" />
                       {link.label}
@@ -210,7 +209,7 @@ export default function Navbar() {
                     <Link
                       to="/login"
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 px-3 py-3 text-sm font-medium bg-blue-600 text-white rounded-lg mt-4 justify-center"
+                      className="flex items-center gap-3 px-3 py-3 text-sm font-medium bg-ink text-white rounded-lg mt-4 justify-center"
                     >
                       <User className="w-5 h-5" />
                       Sign In

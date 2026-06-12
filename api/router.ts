@@ -9,6 +9,7 @@ import { messageRouter } from "./routers/message-router";
 import { notificationRouter } from "./routers/notification-router";
 import { addressRouter } from "./routers/address-router";
 import { adminRouter } from "./routers/admin-router";
+import { businessRouter } from "./routers/business-router";
 
 export const appRouter = createRouter({
   ping: publicQuery.query(() => ({ ok: true, ts: Date.now() })),
@@ -22,6 +23,7 @@ export const appRouter = createRouter({
   notification: notificationRouter,
   address: addressRouter,
   admin: adminRouter,
+  business: businessRouter,
 });
 
 export type AppRouter = typeof appRouter;

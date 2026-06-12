@@ -42,7 +42,7 @@ const allServices = [
     rating: 4.9,
     reviews: 2341,
     icon: Home,
-    color: "bg-blue-50 text-blue-600",
+    color: "bg-brand-50 text-brand",
     features: ["Dusting & Vacuuming", "Mopping Floors", "Bathroom Cleaning", "Kitchen Wipe-down"],
   },
   {
@@ -228,11 +228,11 @@ export default function Services() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-cream">
       {/* Header */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
+          <span className="text-sm font-semibold text-brand uppercase tracking-wider">
             Services
           </span>
           <h1 className="mt-2 text-3xl sm:text-4xl font-bold text-slate-900">
@@ -270,9 +270,9 @@ export default function Services() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
                 activeCategory === cat.id
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                  ? "bg-brand text-white shadow-hard-sm "
                   : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
               }`}
             >
@@ -287,12 +287,12 @@ export default function Services() {
           {filteredServices.map((service) => (
             <Card
               key={service.id}
-              className="group border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+              className="group border-ink/12 shadow-hard-sm hover:shadow-hard transition-all duration-300 overflow-hidden"
             >
               <CardContent className="p-0">
                 <div className="p-6">
                   <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${service.color}`}
+                    className={`w-12 h-12 rounded-md flex items-center justify-center mb-4 ${service.color}`}
                   >
                     <service.icon className="w-6 h-6" />
                   </div>
@@ -310,7 +310,7 @@ export default function Services() {
                         key={feature}
                         className="flex items-center gap-2 text-xs text-slate-600"
                       >
-                        <div className="w-1 h-1 bg-blue-400 rounded-full" />
+                        <div className="w-1 h-1 bg-brand rounded-full" />
                         {feature}
                       </li>
                     ))}
@@ -337,7 +337,7 @@ export default function Services() {
                 {/* Book Button */}
                 <div className="px-6 pb-6">
                   <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white group-hover:shadow-lg transition-all"
+                    className="w-full bg-brand hover:bg-brand-700 text-white group-hover:shadow-hard-sm transition-all"
                     onClick={() => navigate(`/book/${service.id}`)}
                   >
                     Book Now

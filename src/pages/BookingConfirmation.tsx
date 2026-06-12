@@ -8,7 +8,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  CreditCard,
   MessageSquare,
   Phone,
   ArrowRight,
@@ -23,7 +22,7 @@ export default function BookingConfirmation() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12">
+    <div className="min-h-screen bg-cream py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Success Header */}
         <div className="text-center mb-8">
@@ -34,16 +33,16 @@ export default function BookingConfirmation() {
             Booking Confirmed!
           </h1>
           <p className="text-slate-500 mt-2">
-            Your booking <span className="font-semibold text-blue-600">#{bookingId || "1284"}</span> has been confirmed.
+            Your booking <span className="font-semibold text-brand">#{bookingId || "1284"}</span> has been confirmed.
           </p>
         </div>
 
         {/* Booking Card */}
-        <Card className="border-0 shadow-xl mb-6">
+        <Card className="border-ink/12 shadow-hard mb-6">
           <CardContent className="p-6 space-y-6">
             {/* Status */}
             <div className="flex items-center justify-between">
-              <Badge className="bg-blue-100 text-blue-700 text-sm px-3 py-1">
+              <Badge className="bg-brand-100 text-brand-700 text-sm px-3 py-1">
                 Confirmed
               </Badge>
               <span className="text-sm text-slate-500">
@@ -67,7 +66,7 @@ export default function BookingConfirmation() {
             {/* Details Grid */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
-                <Calendar className="w-5 h-5 text-blue-600 mt-0.5" />
+                <Calendar className="w-5 h-5 text-brand mt-0.5" />
                 <div>
                   <p className="text-sm text-slate-500">Date</p>
                   <p className="text-sm font-semibold text-slate-900">
@@ -76,7 +75,7 @@ export default function BookingConfirmation() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
+                <Clock className="w-5 h-5 text-brand mt-0.5" />
                 <div>
                   <p className="text-sm text-slate-500">Time</p>
                   <p className="text-sm font-semibold text-slate-900">
@@ -85,7 +84,7 @@ export default function BookingConfirmation() {
                 </div>
               </div>
               <div className="flex items-start gap-3 col-span-2">
-                <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
+                <MapPin className="w-5 h-5 text-brand mt-0.5" />
                 <div>
                   <p className="text-sm text-slate-500">Address</p>
                   <p className="text-sm font-semibold text-slate-900">
@@ -114,7 +113,7 @@ export default function BookingConfirmation() {
               <Separator />
               <div className="flex justify-between">
                 <span className="font-semibold text-slate-900">Total Paid</span>
-                <span className="text-xl font-bold text-blue-600">
+                <span className="text-xl font-bold text-brand">
                   N12,600
                 </span>
               </div>
@@ -125,9 +124,9 @@ export default function BookingConfirmation() {
             {/* Provider */}
             <div>
               <p className="text-sm text-slate-500 mb-3">Assigned Provider</p>
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-lg font-bold text-blue-600">C</span>
+              <div className="flex items-center gap-3 p-3 bg-cream rounded-md">
+                <div className="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center">
+                  <span className="text-lg font-bold text-brand">C</span>
                 </div>
                 <div>
                   <p className="font-semibold text-slate-900">Chioma A.</p>
@@ -157,7 +156,7 @@ export default function BookingConfirmation() {
         </div>
 
         {/* Next Steps */}
-        <Card className="border-0 shadow-md mb-8">
+        <Card className="border-ink/12 shadow-hard-sm mb-8">
           <CardContent className="p-6">
             <h3 className="font-semibold text-slate-900 mb-4">What's Next?</h3>
             <div className="space-y-3">
@@ -168,8 +167,8 @@ export default function BookingConfirmation() {
                 "Earn loyalty points for your next booking",
               ].map((step, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-blue-600">
+                  <div className="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-brand">
                       {i + 1}
                     </span>
                   </div>
@@ -183,7 +182,7 @@ export default function BookingConfirmation() {
         {/* Bottom Actions */}
         <div className="flex flex-col gap-3">
           <Button
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12"
+            className="w-full bg-brand hover:bg-brand-700 text-white h-12"
             onClick={() => navigate("/dashboard")}
           >
             <Home className="w-4 h-4 mr-2" />

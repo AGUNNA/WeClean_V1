@@ -1,234 +1,142 @@
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Sparkles,
   Shield,
   Clock,
   Star,
-  ChevronRight,
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
   Home as HomeIcon,
   Building2,
-  Car,
   Bug,
   Shirt,
   Sofa,
-  PartyPopper,
   HardHat,
-  ArrowRight,
-  CheckCircle2,
-  Quote,
-  Play,
+  Car,
 } from "lucide-react";
 
 const popularServices = [
-  {
-    icon: HomeIcon,
-    title: "House Cleaning",
-    description: "Regular home cleaning tailored to your schedule",
-    price: "From N5,000",
-    color: "bg-blue-50 text-blue-600",
-  },
-  {
-    icon: Sofa,
-    title: "Deep Cleaning",
-    description: "Thorough cleaning for every corner of your space",
-    price: "From N15,000",
-    color: "bg-emerald-50 text-emerald-600",
-  },
-  {
-    icon: Building2,
-    title: "Office Cleaning",
-    description: "Professional cleaning for workspaces",
-    price: "From N20,000",
-    color: "bg-violet-50 text-violet-600",
-  },
-  {
-    icon: Bug,
-    title: "Fumigation",
-    description: "Pest control and fumigation services",
-    price: "From N12,000",
-    color: "bg-amber-50 text-amber-600",
-  },
-  {
-    icon: Shirt,
-    title: "Laundry",
-    description: "Wash, dry, and fold laundry service",
-    price: "From N3,000",
-    color: "bg-rose-50 text-rose-600",
-  },
-  {
-    icon: Car,
-    title: "Car Detailing",
-    description: "Interior and exterior car cleaning",
-    price: "From N8,000",
-    color: "bg-cyan-50 text-cyan-600",
-  },
-  {
-    icon: HardHat,
-    title: "Post-Construction",
-    description: "Cleanup after renovation or construction",
-    price: "From N50,000",
-    color: "bg-orange-50 text-orange-600",
-  },
-  {
-    icon: PartyPopper,
-    title: "Event Cleanup",
-    description: "Before and after event cleaning",
-    price: "From N25,000",
-    color: "bg-pink-50 text-pink-600",
-  },
+  { icon: HomeIcon, title: "House Cleaning", description: "Regular home cleaning, your schedule.", price: "₦12,000" },
+  { icon: Sofa, title: "Deep Cleaning", description: "Thorough, top-to-bottom refresh.", price: "₦25,000" },
+  { icon: Building2, title: "Office Cleaning", description: "Professional workspace care.", price: "₦45,000" },
+  { icon: Bug, title: "Fumigation", description: "Pest control & fumigation.", price: "₦15,000" },
+  { icon: Shirt, title: "Laundry & Ironing", description: "Wash, dry, fold & press.", price: "₦5,500" },
+  { icon: HardHat, title: "Post-Construction", description: "Cleanup after the build.", price: "₦60,000" },
+  { icon: Car, title: "Car Detailing", description: "Interior & exterior shine.", price: "₦8,000" },
+  { icon: Sparkles, title: "Move-in / Move-out", description: "Fresh start, spotless space.", price: "₦35,000" },
+];
+
+const stats = [
+  { value: "50K+", label: "Happy customers" },
+  { value: "2,500+", label: "Verified cleaners" },
+  { value: "8", label: "Cities covered" },
+  { value: "4.9★", label: "Average rating" },
 ];
 
 const howItWorks = [
-  {
-    step: "01",
-    title: "Choose a Service",
-    description: "Browse our wide range of cleaning services and select what you need.",
-  },
-  {
-    step: "02",
-    title: "Book Instantly",
-    description: "Pick a date and time that works for you. Same-day service available.",
-  },
-  {
-    step: "03",
-    title: "We Clean",
-    description: "A verified professional arrives and transforms your space.",
-  },
-  {
-    step: "04",
-    title: "Enjoy",
-    description: "Relax in your freshly cleaned space. Rate your experience.",
-  },
+  { step: "01", title: "Choose a service", description: "Browse our cleaning services and pick what you need." },
+  { step: "02", title: "Book instantly", description: "Pick a date and time. Same-day service available." },
+  { step: "03", title: "We clean", description: "A verified professional arrives and transforms your space." },
+  { step: "04", title: "Relax & rate", description: "Enjoy a spotless space and rate your experience." },
 ];
 
 const testimonials = [
-  {
-    name: "Amara Okafor",
-    role: "Homeowner, Lekki",
-    text: "CleanPro has been a game-changer for my family. The cleaners are professional, punctual, and thorough. I book every week!",
-    rating: 5,
-  },
-  {
-    name: "Tunde Bakare",
-    role: "Office Manager, Ikeja",
-    text: "We use CleanPro for our office cleaning. The team is reliable and our workspace has never looked better. Highly recommended.",
-    rating: 5,
-  },
-  {
-    name: "Ngozi Eze",
-    role: "Airbnb Host, Victoria Island",
-    text: "As an Airbnb host, I need same-day turnover cleaning. CleanPro delivers every time. My guests always compliment the cleanliness!",
-    rating: 5,
-  },
+  { name: "Amara Okafor", role: "Homeowner · Lekki", text: "WeClean has been a game-changer for my family. The cleaners are professional, punctual, and thorough. I book every week." },
+  { name: "Tunde Bakare", role: "Office Manager · Ikeja", text: "We use WeClean for our office. The team is reliable and our workspace has never looked better. Highly recommended." },
+  { name: "Ngozi Eze", role: "Airbnb Host · V.I.", text: "As a host I need same-day turnover cleaning. WeClean delivers every time — guests always compliment the cleanliness." },
 ];
 
 const trustBadges = [
-  { icon: Shield, label: "Verified Cleaners", description: "Background checked" },
-  { icon: Clock, label: "On-Time Guarantee", description: "Or it's free" },
-  { icon: Star, label: "4.9/5 Rating", description: "From 10,000+ reviews" },
-  { icon: CheckCircle2, label: "Insured Service", description: "Full coverage" },
+  { icon: Shield, label: "Verified cleaners", description: "Background checked" },
+  { icon: Clock, label: "On-time guarantee", description: "Or it's free" },
+  { icon: Star, label: "4.9 / 5 rating", description: "10,000+ reviews" },
+  { icon: CheckCircle2, label: "Insured service", description: "Full coverage" },
 ];
 
 export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen">
-      {/* ── HERO SECTION ──────────────────────────────────────────── */}
-      <section className="relative bg-white overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#dbeafe_0%,_transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_#ede9fe_0%,_transparent_50%)]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24 lg:pt-24 lg:pb-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-full">
-                <Sparkles className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">
-                  #1 Cleaning Marketplace in Nigeria
+    <div className="bg-background">
+      {/* ── HERO ───────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b-2 border-ink">
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#15110d 1px,transparent 1px),linear-gradient(90deg,#15110d 1px,transparent 1px)",
+            backgroundSize: "40px 40px, 40px 40px",
+          }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-16 lg:pt-20 lg:pb-20">
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+            <div className="lg:col-span-6 space-y-7">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 border-2 border-ink rounded-full bg-cream">
+                <span className="flex h-2 w-2 rounded-full bg-brand" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-ink">
+                  Nigeria's #1 cleaning marketplace
                 </span>
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.1] tracking-tight">
-                Professional Cleaning{" "}
-                <span className="text-blue-600">at Your Doorstep</span>
+              <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-ink leading-[0.95]">
+                A spotless space,
+                <br />
+                <span className="text-brand">on demand.</span>
               </h1>
-              <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
+              <p className="text-lg text-ink/70 leading-relaxed max-w-md">
                 Book trusted, verified cleaning professionals for your home,
-                office, or event. From regular housekeeping to deep cleaning —
-                we've got you covered across Nigeria.
+                office, or event — across Nigeria.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   size="lg"
                   onClick={() => navigate("/services")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 h-14 shadow-xl shadow-blue-600/20"
+                  className="bg-ink hover:bg-brand text-white text-base px-7 h-12 shadow-hard hover:shadow-hard-brand transition-all"
                 >
-                  Book a Cleaning
+                  Book a cleaning
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={() => navigate("/provider/onboarding")}
-                  className="text-lg px-8 h-14 border-slate-300 hover:bg-slate-50"
+                  onClick={() => navigate("/login")}
+                  className="text-base px-7 h-12 border-2 border-ink hover:bg-ink hover:text-white"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  Become a Provider
+                  Explore the demo
                 </Button>
               </div>
-              <div className="flex items-center gap-6 pt-4">
-                <div className="flex -space-x-3">
-                  {[1, 2, 3, 4].map((i) => (
+              <div className="flex items-center gap-3 pt-2">
+                <div className="flex -space-x-2.5">
+                  {["bg-brand", "bg-ink", "bg-amber-500", "bg-brand-700"].map((c, i) => (
                     <div
                       key={i}
-                      className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500"
+                      className={`w-9 h-9 rounded-full border-2 border-cream ${c} flex items-center justify-center text-xs font-bold text-white`}
                     >
-                      {String.fromCharCode(64 + i)}
+                      {String.fromCharCode(65 + i)}
                     </div>
                   ))}
                 </div>
-                <div>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-4 h-4 fill-amber-400 text-amber-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm text-slate-500">
-                    <span className="font-semibold text-slate-700">4.9/5</span>{" "}
-                    from 10,000+ happy customers
-                  </p>
-                </div>
+                <p className="text-sm text-ink/60">
+                  <span className="font-bold text-ink">4.9★</span> · 10,000+ reviews
+                </p>
               </div>
             </div>
-            <div className="relative hidden lg:block">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/10 aspect-[4/3] bg-slate-100">
+
+            {/* Hero image — hard frame */}
+            <div className="lg:col-span-6 relative">
+              <div className="rounded-lg overflow-hidden aspect-[4/3] border-2 border-ink shadow-hard">
                 <img
                   src="/hero-cleaning.jpg"
-                  alt="Professional cleaning service in Nigeria"
+                  alt="Professional cleaners at work in a Nigerian home"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-slate-900/10" />
               </div>
-              {/* Floating card */}
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">2,500+</p>
-                  <p className="text-xs text-slate-500">Cleaners Available</p>
-                </div>
-              </div>
-              <div className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl p-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Live Tracking
-                  </span>
+              <div className="absolute -bottom-4 -left-3 sm:-left-4 bg-cream border-2 border-ink rounded-md px-3.5 py-2.5 flex items-center gap-3">
+                <CheckCircle2 className="w-6 h-6 text-brand" />
+                <div className="leading-tight">
+                  <p className="text-sm font-bold text-ink">2,500+ cleaners</p>
+                  <p className="text-xs text-ink/55">available near you</p>
                 </div>
               </div>
             </div>
@@ -236,157 +144,132 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── TRUST BADGES ──────────────────────────────────────────── */}
-      <section className="bg-white border-y border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {trustBadges.map((badge) => (
-              <div key={badge.label} className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-                  <badge.icon className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {badge.label}
-                  </p>
-                  <p className="text-xs text-slate-500">{badge.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* ── STATS BAND ─────────────────────────────────────────────── */}
+      <section className="bg-ink text-cream border-b-2 border-ink">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 divide-x divide-white/15">
+          {stats.map((s) => (
+            <div key={s.label} className="px-6 py-8 text-center">
+              <p className="font-display text-4xl font-bold text-white">{s.value}</p>
+              <p className="text-sm text-cream/60 mt-1">{s.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── POPULAR SERVICES ──────────────────────────────────────── */}
-      <section className="py-20 bg-slate-50">
+      {/* ── SERVICES ───────────────────────────────────────────────── */}
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
-              Our Services
-            </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-slate-900">
-              Cleaning Services for Every Need
-            </h2>
-            <p className="mt-4 text-slate-600 max-w-2xl mx-auto">
-              From homes to offices, vehicles to events — find the perfect
-              cleaning service for your needs.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularServices.map((service) => (
-              <Card
-                key={service.title}
-                className="group cursor-pointer border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                onClick={() => navigate("/services")}
-              >
-                <CardContent className="p-6">
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${service.color}`}
-                  >
-                    <service.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-1">
-                    {service.title}
-                  </h3>
-                  <p className="text-sm text-slate-500 mb-3">
-                    {service.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-blue-600">
-                      {service.price}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="text-center mt-10">
+          <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-brand">
+                Our services
+              </span>
+              <h2 className="mt-2 font-display text-4xl sm:text-5xl font-bold text-ink">
+                Cleaning for every need
+              </h2>
+            </div>
             <Button
               variant="outline"
-              size="lg"
               onClick={() => navigate("/services")}
-              className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              className="border-2 border-ink hover:bg-ink hover:text-white"
             >
-              View All Services
+              All services
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-ink border-2 border-ink rounded-lg overflow-hidden">
+            {popularServices.map((service) => (
+              <button
+                key={service.title}
+                onClick={() => navigate("/services")}
+                className="group text-left bg-cream p-6 transition-colors hover:bg-brand"
+              >
+                <div className="w-11 h-11 rounded-sm border-2 border-ink bg-paper flex items-center justify-center mb-4 group-hover:bg-cream">
+                  <service.icon className="w-5 h-5 text-ink" />
+                </div>
+                <h3 className="text-base font-bold text-ink">{service.title}</h3>
+                <p className="text-sm text-ink/60 mt-1 mb-4 group-hover:text-ink/80">{service.description}</p>
+                <div className="flex items-center justify-between pt-3 border-t-2 border-ink/10 group-hover:border-ink/20">
+                  <span className="text-sm text-ink/70">
+                    from <span className="font-bold text-ink">{service.price}</span>
+                  </span>
+                  <ArrowUpRight className="w-4 h-4 text-ink/40 group-hover:text-ink transition-all" />
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ──────────────────────────────────────────── */}
-      <section className="py-20 bg-white">
+      {/* ── HOW IT WORKS ───────────────────────────────────────────── */}
+      <section className="py-20 border-y-2 border-ink bg-paper">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider">
-              How It Works
+          <div className="mb-12">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand">
+              How it works
             </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-slate-900">
-              Book in Minutes, Clean in Hours
+            <h2 className="mt-2 font-display text-4xl sm:text-5xl font-bold text-ink">
+              Book in minutes, clean in hours
             </h2>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {howItWorks.map((step, i) => (
-              <div key={step.step} className="relative">
-                <div className="text-6xl font-extrabold text-blue-100 leading-none mb-4">
-                  {step.step}
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  {step.description}
-                </p>
-                {i < howItWorks.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 right-0 translate-x-1/2">
-                    <ArrowRight className="w-6 h-6 text-slate-300" />
-                  </div>
-                )}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {howItWorks.map((step) => (
+              <div key={step.step} className="bg-cream border-2 border-ink rounded-lg p-6 shadow-hard-sm">
+                <div className="font-display text-3xl font-bold text-brand mb-3">{step.step}</div>
+                <h3 className="text-base font-bold text-ink mb-1.5">{step.title}</h3>
+                <p className="text-sm text-ink/60 leading-relaxed">{step.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
-      <section className="py-20 bg-slate-900 text-white">
+      {/* ── TRUST BADGES ───────────────────────────────────────────── */}
+      <section className="py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-sm font-semibold text-blue-400 uppercase tracking-wider">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {trustBadges.map((badge) => (
+              <div key={badge.label} className="flex items-center gap-3">
+                <div className="w-11 h-11 border-2 border-ink rounded-sm bg-paper flex items-center justify-center shrink-0">
+                  <badge.icon className="w-5 h-5 text-brand" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-ink">{badge.label}</p>
+                  <p className="text-xs text-ink/55">{badge.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ───────────────────────────────────────────── */}
+      <section className="py-20 bg-ink text-cream border-y-2 border-ink">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand">
               Testimonials
             </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold">
-              Loved by Thousands
+            <h2 className="mt-2 font-display text-4xl sm:text-5xl font-bold text-white">
+              Loved by thousands
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial) => (
-              <div
-                key={testimonial.name}
-                className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700"
-              >
-                <Quote className="w-8 h-8 text-blue-500 mb-4" />
-                <div className="flex items-center gap-1 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-amber-400 text-amber-400"
-                    />
+          <div className="grid md:grid-cols-3 gap-6">
+            {testimonials.map((t) => (
+              <div key={t.name} className="border-2 border-white/15 rounded-lg p-6">
+                <div className="flex items-center gap-0.5 mb-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-brand text-brand" />
                   ))}
                 </div>
-                <p className="text-slate-300 text-sm leading-relaxed mb-6">
-                  "{testimonial.text}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold">
-                    {testimonial.name.charAt(0)}
+                <p className="text-cream/80 text-[15px] leading-relaxed mb-6">"{t.text}"</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                  <div className="w-10 h-10 bg-brand rounded-sm flex items-center justify-center text-sm font-bold text-white">
+                    {t.name.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">
-                      {testimonial.name}
-                    </p>
-                    <p className="text-xs text-slate-400">{testimonial.role}</p>
+                    <p className="text-sm font-bold text-white">{t.name}</p>
+                    <p className="text-xs text-cream/50">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -395,33 +278,35 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CTA SECTION ───────────────────────────────────────────── */}
-      <section className="py-20 bg-blue-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Ready for a Cleaner Space?
-          </h2>
-          <p className="text-blue-100 text-lg mb-8">
-            Join over 50,000 Nigerians who trust CleanPro for their cleaning needs.
-            First-time customers get 20% off!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              onClick={() => navigate("/services")}
-              className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 h-14 shadow-xl"
-            >
-              Book Now & Save 20%
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate("/provider/onboarding")}
-              className="border-white text-white hover:bg-blue-700 text-lg px-8 h-14"
-            >
-              Become a Provider
-            </Button>
+      {/* ── CTA ────────────────────────────────────────────────────── */}
+      <section className="py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="border-2 border-ink rounded-lg bg-brand px-8 py-14 text-center shadow-hard">
+            <h2 className="font-display text-4xl sm:text-5xl font-bold text-white mb-3">
+              Ready for a cleaner space?
+            </h2>
+            <p className="text-white/85 text-lg mb-8 max-w-xl mx-auto">
+              Join 50,000+ Nigerians who trust WeClean. First-time customers get
+              20% off their first booking.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                size="lg"
+                onClick={() => navigate("/services")}
+                className="bg-ink hover:bg-white hover:text-ink text-white text-base px-7 h-12 border-2 border-ink"
+              >
+                Book now & save 20%
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate("/login")}
+                className="border-2 border-ink text-ink hover:bg-ink hover:text-white bg-transparent text-base px-7 h-12"
+              >
+                Try the demo
+              </Button>
+            </div>
           </div>
         </div>
       </section>

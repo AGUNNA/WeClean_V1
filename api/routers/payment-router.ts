@@ -2,7 +2,7 @@ import { z } from "zod";
 import { eq, and, desc } from "drizzle-orm";
 import { createRouter, authedQuery, adminQuery } from "../middleware";
 import { getDb } from "../queries/connection";
-import { bookings, withdrawals, providerProfiles, coupons, couponRedemptions } from "@db/schema";
+import { bookings, withdrawals, providerProfiles, coupons } from "@db/schema";
 import { TRPCError } from "@trpc/server";
 
 export const paymentRouter = createRouter({
@@ -64,7 +64,7 @@ export const paymentRouter = createRouter({
         status: z.enum(["success", "failed"]),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const db = getDb();
 
       if (input.status === "success") {
@@ -277,7 +277,7 @@ export const paymentRouter = createRouter({
         serviceId: z.number().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const db = getDb();
       const now = new Date();
 
@@ -333,7 +333,7 @@ export const paymentRouter = createRouter({
         amount: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const db = getDb();
       const [booking] = await db
         .select()

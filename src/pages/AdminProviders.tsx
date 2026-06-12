@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -10,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { trpc } from "@/providers/trpc";
+import { toast } from "sonner";
 import {
   Search,
   Filter,
@@ -17,32 +20,31 @@ import {
   MapPin,
   CheckCircle2,
   XCircle,
-  Clock,
-  Shield,
-  MoreHorizontal,
   Briefcase,
 } from "lucide-react";
-
-const providers = [
-  { id: 1, name: "Chioma Adeleke", type: "Individual", city: "Lekki", rating: 4.9, jobs: 156, status: "verified", badge: "Gold", joinDate: "Jan 2025" },
-  { id: 2, name: "Sparkle Clean Ltd", type: "Company", city: "Ikeja", rating: 4.7, jobs: 342, status: "verified", badge: "Platinum", joinDate: "Mar 2024" },
-  { id: 3, name: "Emmanuel Okonkwo", type: "Individual", city: "Yaba", rating: 4.8, jobs: 89, status: "pending", badge: "None", joinDate: "May 2026" },
-  { id: 4, name: "Amina Suleiman", type: "Individual", city: "Surulere", rating: 4.5, jobs: 67, status: "pending", badge: "None", joinDate: "May 2026" },
-  { id: 5, name: "CleanMax Services", type: "Company", city: "VI", rating: 4.6, jobs: 278, status: "verified", badge: "Silver", joinDate: "Jun 2024" },
-  { id: 6, name: "Sunday Ojo", type: "Individual", city: "Ikoyi", rating: 4.9, jobs: 134, status: "verified", badge: "Gold", joinDate: "Sep 2024" },
-];
 
 export default function AdminProviders() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const utils = trpc.useUtils();
 
-  const filtered = providers.filter((p) => {
-    const matchesStatus = statusFilter === "all" || p.status === statusFilter;
-    const matchesSearch =
-      !searchQuery ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
+  const { data: providers, isLoading } =
+    trpc.admin.listProviderVerifications.useQuery({ status: statusFilter });
+
+  const verify = trpc.admin.verifyProvider.useMutation({
+    onSuccess: () => {
+      toast.success("Provider updated");
+      utils.admin.listProviderVerifications.invalidate();
+      utils.admin.dashboard.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
   });
+
+  const filtered = (providers ?? []).filter(
+    (p) =>
+      !searchQuery ||
+      (p.name ?? "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="p-8">
@@ -50,7 +52,7 @@ export default function AdminProviders() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Providers</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Manage cleaning professionals and companies.
+            Review and verify cleaning professionals.
           </p>
         </div>
       </div>
@@ -71,79 +73,103 @@ export default function AdminProviders() {
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="verified">Verified</SelectItem>
+            <SelectItem value="all">All providers</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="verified">Verified</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
+            <SelectItem value="unverified">Unverified</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div className="grid gap-4">
-        {filtered.map((provider) => (
-          <Card key={provider.id} className="border-0 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Briefcase className="w-6 h-6 text-blue-600" />
+      {isLoading ? (
+        <div className="grid gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
+      ) : !filtered.length ? (
+        <p className="text-sm text-slate-400 py-12 text-center">
+          No providers{statusFilter !== "all" ? ` with status "${statusFilter}"` : ""}.
+        </p>
+      ) : (
+        <div className="grid gap-4">
+          {filtered.map((provider) => (
+            <Card key={provider.id} className="border-ink/12 ">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-brand-100 rounded-md flex items-center justify-center">
+                      <Briefcase className="w-6 h-6 text-brand" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-slate-900">
+                          {provider.name ?? "Unnamed"}
+                        </h3>
+                        <Badge
+                          className={
+                            provider.verificationStatus === "verified"
+                              ? "bg-green-100 text-green-700"
+                              : provider.verificationStatus === "rejected"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-amber-100 text-amber-700"
+                          }
+                        >
+                          {provider.verificationStatus}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {provider.city ?? "—"}
+                        </span>
+                        <span>{provider.email}</span>
+                        <span>{provider.yearsOfExperience ?? 0} yrs exp</span>
+                        {provider.idType && (
+                          <span className="flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            {provider.idType}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-slate-900">
-                        {provider.name}
-                      </h3>
-                      <Badge
-                        className={
-                          provider.status === "verified"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-amber-100 text-amber-700"
+                  <div className="flex items-center gap-2">
+                    {provider.verificationStatus !== "verified" && (
+                      <Button
+                        size="sm"
+                        className="h-8 bg-brand hover:bg-brand-700"
+                        disabled={verify.isPending}
+                        onClick={() =>
+                          verify.mutate({ providerId: provider.id, decision: "verified" })
                         }
                       >
-                        {provider.status}
-                      </Badge>
-                      {provider.badge !== "None" && (
-                        <Badge className="bg-blue-100 text-blue-700">
-                          {provider.badge}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {provider.city}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                        {provider.rating}
-                      </span>
-                      <span>{provider.jobs} jobs</span>
-                      <span>{provider.type}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {provider.status === "pending" && (
-                    <>
-                      <Button size="sm" variant="outline" className="h-8">
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Reject
-                      </Button>
-                      <Button size="sm" className="h-8 bg-blue-600">
                         <CheckCircle2 className="w-4 h-4 mr-1" />
                         Verify
                       </Button>
-                    </>
-                  )}
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
+                    )}
+                    {provider.verificationStatus !== "rejected" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-red-600"
+                        disabled={verify.isPending}
+                        onClick={() =>
+                          verify.mutate({ providerId: provider.id, decision: "rejected" })
+                        }
+                      >
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Reject
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

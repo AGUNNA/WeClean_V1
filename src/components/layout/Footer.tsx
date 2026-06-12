@@ -1,62 +1,42 @@
 import { Link } from "react-router";
-import { Sparkles, Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300">
+    <footer className="bg-ink text-cream/70">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="text-lg font-bold text-white">CleanPro</span>
-                <span className="text-[10px] text-slate-500 ml-1 font-medium uppercase tracking-wider">
-                  Nigeria
-                </span>
-              </div>
+            <Link to="/" className="flex items-center">
+              <span className="font-display text-2xl font-bold text-white tracking-tight">
+                We<span className="text-brand">Clean</span>
+              </span>
             </Link>
-            <p className="text-sm text-slate-400 leading-relaxed">
+            <p className="text-sm text-cream/50 leading-relaxed">
               Nigeria's most trusted on-demand cleaning and facility management
               marketplace. Connecting you with verified cleaning professionals.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <a href="#" className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors">
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a href="#" className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors">
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a href="#" className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="#" className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors">
-                <Linkedin className="w-4 h-4" />
-              </a>
+            <div className="flex items-center gap-2 pt-2">
+              {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="p-2 bg-white/5 rounded-sm hover:bg-brand hover:text-white transition-colors"
+                >
+                  <Icon className="w-4 h-4" />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Services */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Our Services</h3>
+            <h3 className="text-white font-display font-semibold mb-4">Our Services</h3>
             <ul className="space-y-2.5">
-              {[
-                "House Cleaning",
-                "Deep Cleaning",
-                "Office Cleaning",
-                "Fumigation",
-                "Laundry Service",
-                "Post-Construction",
-                "Event Cleanup",
-              ].map((service) => (
+              {["House Cleaning", "Deep Cleaning", "Office Cleaning", "Fumigation", "Laundry Service", "Post-Construction", "Event Cleanup"].map((service) => (
                 <li key={service}>
-                  <Link
-                    to="/services"
-                    className="text-sm text-slate-400 hover:text-blue-400 transition-colors"
-                  >
+                  <Link to="/services" className="text-sm text-cream/50 hover:text-white transition-colors">
                     {service}
                   </Link>
                 </li>
@@ -66,22 +46,17 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Company</h3>
+            <h3 className="text-white font-display font-semibold mb-4">Company</h3>
             <ul className="space-y-2.5">
               {[
-                { label: "About Us", href: "#" },
+                { label: "About Us", href: "/about" },
                 { label: "Become a Provider", href: "/provider/onboarding" },
-                { label: "Blog", href: "#" },
-                { label: "Careers", href: "#" },
-                { label: "Privacy Policy", href: "#" },
-                { label: "Terms of Service", href: "#" },
-                { label: "Help Center", href: "#" },
+                { label: "Contact", href: "/contact" },
+                { label: "FAQs", href: "/faq" },
+                { label: "Help Center", href: "/faq" },
               ].map((item) => (
                 <li key={item.label}>
-                  <Link
-                    to={item.href}
-                    className="text-sm text-slate-400 hover:text-blue-400 transition-colors"
-                  >
+                  <Link to={item.href} className="text-sm text-cream/50 hover:text-white transition-colors">
                     {item.label}
                   </Link>
                 </li>
@@ -91,27 +66,27 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Contact Us</h3>
+            <h3 className="text-white font-display font-semibold mb-4">Contact Us</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <Phone className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-slate-400">
-                  +234 800 CLEANPRO
+                <Phone className="w-4 h-4 text-brand mt-0.5 shrink-0" />
+                <span className="text-sm text-cream/50">
+                  +234 800 WECLEAN
                   <br />
                   Mon - Sat, 7am - 8pm
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <Mail className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-slate-400">
-                  hello@cleanpro.ng
+                <Mail className="w-4 h-4 text-brand mt-0.5 shrink-0" />
+                <span className="text-sm text-cream/50">
+                  hello@weclean.ng
                   <br />
-                  support@cleanpro.ng
+                  support@weclean.ng
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-slate-400">
+                <MapPin className="w-4 h-4 text-brand mt-0.5 shrink-0" />
+                <span className="text-sm text-cream/50">
                   123 Admiralty Way
                   <br />
                   Lekki Phase 1, Lagos
@@ -122,22 +97,18 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-500">
-            &copy; {new Date().getFullYear()} CleanPro Nigeria. All rights reserved.
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-cream/40">
+            &copy; {new Date().getFullYear()} WeClean. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-slate-600">Secured with</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-cream/40">Secured with</span>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-1 bg-slate-800 rounded text-xs font-medium text-slate-400">
-                Paystack
-              </span>
-              <span className="px-2 py-1 bg-slate-800 rounded text-xs font-medium text-slate-400">
-                Flutterwave
-              </span>
-              <span className="px-2 py-1 bg-slate-800 rounded text-xs font-medium text-slate-400">
-                SSL
-              </span>
+              {["Paystack", "Flutterwave", "SSL"].map((b) => (
+                <span key={b} className="px-2 py-1 bg-white/5 rounded-sm text-xs font-medium text-cream/50">
+                  {b}
+                </span>
+              ))}
             </div>
           </div>
         </div>

@@ -48,7 +48,7 @@ export const providerRouter = createRouter({
         conditions.push(eq(providerProfiles.isAvailable, input.isAvailable));
       }
 
-      let query = db
+      const query = db
         .select({
           id: providerProfiles.id,
           userId: providerProfiles.userId,
@@ -226,7 +226,7 @@ export const providerRouter = createRouter({
           .set({ role: "provider" })
           .where(eq(users.id, userId));
 
-        return { success: true, id: Number((result as any).insertId) };
+        return { success: true, id: Number((result as any).lastInsertRowid) };
       }
     }),
 
@@ -401,7 +401,7 @@ export const providerRouter = createRouter({
         notes: z.string().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const db = getDb();
       await db
         .update(providerProfiles)

@@ -19,6 +19,7 @@ export function useAuth() {
   }, [logoutMutation]);
 
   const isAdmin = user?.role === "admin" || user?.role === "superadmin";
+  const isBusiness = user?.role === "business";
   const isProvider = user?.role === "provider" || user?.role === "company";
 
   return {
@@ -26,6 +27,7 @@ export function useAuth() {
     isLoading,
     isAuthenticated: !!user,
     isAdmin,
+    isBusiness,
     isProvider,
     logout,
   };

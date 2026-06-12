@@ -1,15 +1,13 @@
 import { z } from "zod";
-import { eq, and, desc, gte, lte, sql } from "drizzle-orm";
-import { createRouter, publicQuery, authedQuery, adminQuery } from "../middleware";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
+import { createRouter, authedQuery, adminQuery } from "../middleware";
 import { getDb } from "../queries/connection";
 import {
   bookings,
   bookingItems,
   bookingStatusHistory,
   providerProfiles,
-  users,
   services,
-  addresses,
 } from "@db/schema";
 import { TRPCError } from "@trpc/server";
 
@@ -65,7 +63,7 @@ export const bookingRouter = createRouter({
       const completionOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
       // Create booking
-      const [bookingResult] = await db.insert(bookings).values({
+      const bookingResult = await db.insert(bookings).values({
         customerId,
         addressId: input.addressId,
         status: "pending",
@@ -91,7 +89,7 @@ export const bookingRouter = createRouter({
         source: input.source,
       });
 
-      const bookingId = Number(bookingResult.insertId);
+      const bookingId = Number(bookingResult.lastInsertRowid);
 
       // Create booking items
       if (input.items && input.items.length > 0) {
@@ -204,7 +202,7 @@ export const bookingRouter = createRouter({
   // ── Get Booking Details ─────────────────────────────────────────
   getById: authedQuery
     .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const db = getDb();
       const [booking] = await db
         .select()
@@ -327,7 +325,7 @@ export const bookingRouter = createRouter({
         otp: z.string().length(6),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const db = getDb();
       const [booking] = await db
         .select()

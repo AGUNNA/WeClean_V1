@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { lazy, Suspense } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import AdminLayout from "@/components/layout/AdminLayout";
+import BusinessLayout from "@/components/layout/BusinessLayout";
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import("@/pages/Home"));
@@ -19,13 +20,23 @@ const AdminProviders = lazy(() => import("@/pages/AdminProviders"));
 const AdminUsers = lazy(() => import("@/pages/AdminUsers"));
 const AdminAnalytics = lazy(() => import("@/pages/AdminAnalytics"));
 const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
+const AdminWithdrawals = lazy(() => import("@/pages/AdminWithdrawals"));
+const BusinessDashboard = lazy(() => import("@/pages/BusinessDashboard"));
+const BusinessBookings = lazy(() => import("@/pages/BusinessBookings"));
+const BusinessStaff = lazy(() => import("@/pages/BusinessStaff"));
+const BusinessServices = lazy(() => import("@/pages/BusinessServices"));
+const BusinessEarnings = lazy(() => import("@/pages/BusinessEarnings"));
+const BusinessProfile = lazy(() => import("@/pages/BusinessProfile"));
+const About = lazy(() => import("@/pages/About"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const FAQ = lazy(() => import("@/pages/FAQ"));
 const Login = lazy(() => import("@/pages/Login"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand" />
     </div>
   );
 }
@@ -45,6 +56,9 @@ export default function App() {
             <Route path="/dashboard" element={<CustomerDashboard />} />
             <Route path="/provider" element={<ProviderDashboard />} />
             <Route path="/provider/onboarding" element={<ProviderOnboarding />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
           </Route>
 
           {/* Admin Routes */}
@@ -54,7 +68,18 @@ export default function App() {
             <Route path="/admin/providers" element={<AdminProviders />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
+            <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+          </Route>
+
+          {/* Business Routes */}
+          <Route element={<BusinessLayout />}>
+            <Route path="/business" element={<BusinessDashboard />} />
+            <Route path="/business/bookings" element={<BusinessBookings />} />
+            <Route path="/business/staff" element={<BusinessStaff />} />
+            <Route path="/business/services" element={<BusinessServices />} />
+            <Route path="/business/earnings" element={<BusinessEarnings />} />
+            <Route path="/business/profile" element={<BusinessProfile />} />
           </Route>
 
           {/* Auth */}

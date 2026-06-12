@@ -1,10 +1,11 @@
 import { z } from "zod";
-import { eq, and, desc, gte, lte, sql, count } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { createRouter, adminQuery } from "../middleware";
 import { getDb } from "../queries/connection";
 import {
   users,
   providerProfiles,
+  businesses,
   bookings,
   reviews,
   disputes,
@@ -166,7 +167,7 @@ export const adminRouter = createRouter({
         dateTo: z.string().optional(),
       }).optional()
     )
-    .query(async ({ input }) => {
+    .query(async () => {
       const db = getDb();
       const allBookings = await db.select().from(bookings);
 
@@ -201,7 +202,7 @@ export const adminRouter = createRouter({
         dateTo: z.string().optional(),
       }).optional()
     )
-    .query(async ({ input }) => {
+    .query(async () => {
       const db = getDb();
       const completedBookings = await db
         .select()
@@ -386,6 +387,208 @@ export const adminRouter = createRouter({
         createdBy: ctx.user.id,
       });
 
-      return { success: true, id: Number((result as any).insertId) };
+      return { success: true, id: Number((result as any).lastInsertRowid) };
+    }),
+
+  // ── Recent bookings (for dashboard table) ───────────────────────
+  recentBookings: adminQuery
+    .input(z.object({ limit: z.number().default(8) }).optional())
+    .query(async ({ input }) => {
+      const db = getDb();
+      return db
+        .select({
+          id: bookings.id,
+          status: bookings.status,
+          totalAmount: bookings.totalAmount,
+          createdAt: bookings.createdAt,
+          customerName: users.name,
+        })
+        .from(bookings)
+        .leftJoin(users, eq(users.id, bookings.customerId))
+        .orderBy(desc(bookings.createdAt))
+        .limit(input?.limit || 8);
+    }),
+
+  // ── Revenue time series (for charts) ────────────────────────────
+  revenueTimeSeries: adminQuery
+    .input(z.object({ months: z.number().default(6) }).optional())
+    .query(async ({ input }) => {
+      const db = getDb();
+      const all = await db.select().from(bookings);
+      const completed = all.filter((b) => b.status === "completed");
+      const n = input?.months || 6;
+      const now = new Date();
+      const buckets: { month: string; revenue: number; bookings: number }[] = [];
+      const index = new Map<string, (typeof buckets)[number]>();
+      for (let i = n - 1; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const b = {
+          month: d.toLocaleString("en", { month: "short" }),
+          revenue: 0,
+          bookings: 0,
+        };
+        buckets.push(b);
+        index.set(`${d.getFullYear()}-${d.getMonth()}`, b);
+      }
+      for (const b of completed) {
+        const d = new Date(b.createdAt);
+        const bucket = index.get(`${d.getFullYear()}-${d.getMonth()}`);
+        if (bucket) {
+          bucket.revenue += parseFloat(b.totalAmount || "0");
+          bucket.bookings += 1;
+        }
+      }
+      // Booking volume by status (all bookings) for a second chart
+      const statusCounts: Record<string, number> = {};
+      for (const b of all) {
+        statusCounts[b.status] = (statusCounts[b.status] || 0) + 1;
+      }
+      return {
+        monthly: buckets.map((b) => ({ ...b, revenue: Math.round(b.revenue) })),
+        statusCounts,
+      };
+    }),
+
+  // ── Provider verification workflow ──────────────────────────────
+  listProviderVerifications: adminQuery
+    .input(z.object({ status: z.string().optional() }).optional())
+    .query(async ({ input }) => {
+      const db = getDb();
+      const status = input?.status;
+      // No status (or "all") returns every provider; otherwise filter.
+      const where =
+        status && status !== "all"
+          ? eq(providerProfiles.verificationStatus, status as never)
+          : undefined;
+      return db
+        .select({
+          id: providerProfiles.id,
+          userId: providerProfiles.userId,
+          verificationStatus: providerProfiles.verificationStatus,
+          companyName: providerProfiles.companyName,
+          yearsOfExperience: providerProfiles.yearsOfExperience,
+          city: providerProfiles.city,
+          state: providerProfiles.state,
+          idType: providerProfiles.idType,
+          overallRating: providerProfiles.overallRating,
+          totalJobsCompleted: providerProfiles.totalJobsCompleted,
+          isAvailable: providerProfiles.isAvailable,
+          createdAt: providerProfiles.createdAt,
+          name: users.name,
+          email: users.email,
+          phone: users.phone,
+          avatar: users.avatar,
+        })
+        .from(providerProfiles)
+        .leftJoin(users, eq(users.id, providerProfiles.userId))
+        .where(where)
+        .orderBy(desc(providerProfiles.createdAt));
+    }),
+
+  verifyProvider: adminQuery
+    .input(
+      z.object({
+        providerId: z.number(),
+        decision: z.enum(["verified", "rejected"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      await db
+        .update(providerProfiles)
+        .set({ verificationStatus: input.decision })
+        .where(eq(providerProfiles.id, input.providerId));
+      await db.insert(activityLogs).values({
+        adminId: ctx.user.id,
+        action: `${input.decision}_provider`,
+        entityType: "provider",
+        entityId: input.providerId,
+      });
+      return { success: true };
+    }),
+
+  // ── Business management ─────────────────────────────────────────
+  listBusinesses: adminQuery
+    .input(z.object({ status: z.string().optional() }).optional())
+    .query(async ({ input }) => {
+      const db = getDb();
+      const conditions = [];
+      if (input?.status) {
+        conditions.push(
+          eq(businesses.verificationStatus, input.status as never)
+        );
+      }
+      return db
+        .select()
+        .from(businesses)
+        .where(conditions.length ? and(...conditions) : undefined)
+        .orderBy(desc(businesses.createdAt));
+    }),
+
+  verifyBusiness: adminQuery
+    .input(
+      z.object({
+        businessId: z.number(),
+        decision: z.enum(["verified", "rejected"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      await db
+        .update(businesses)
+        .set({ verificationStatus: input.decision })
+        .where(eq(businesses.id, input.businessId));
+      await db.insert(activityLogs).values({
+        adminId: ctx.user.id,
+        action: `${input.decision}_business`,
+        entityType: "business",
+        entityId: input.businessId,
+      });
+      return { success: true };
+    }),
+
+  // ── Withdrawals / payouts workflow ──────────────────────────────
+  listWithdrawals: adminQuery
+    .input(z.object({ status: z.string().optional() }).optional())
+    .query(async ({ input }) => {
+      const db = getDb();
+      const conditions = [];
+      if (input?.status) {
+        conditions.push(eq(withdrawals.status, input.status as never));
+      }
+      return db
+        .select()
+        .from(withdrawals)
+        .where(conditions.length ? and(...conditions) : undefined)
+        .orderBy(desc(withdrawals.createdAt));
+    }),
+
+  processWithdrawal: adminQuery
+    .input(
+      z.object({
+        id: z.number(),
+        decision: z.enum(["completed", "rejected"]),
+        rejectionReason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      await db
+        .update(withdrawals)
+        .set({
+          status: input.decision,
+          processedAt: new Date(),
+          processedBy: ctx.user.id,
+          rejectionReason:
+            input.decision === "rejected" ? input.rejectionReason : null,
+        })
+        .where(eq(withdrawals.id, input.id));
+      await db.insert(activityLogs).values({
+        adminId: ctx.user.id,
+        action: `${input.decision}_withdrawal`,
+        entityType: "withdrawal",
+        entityId: input.id,
+      });
+      return { success: true };
     }),
 });
